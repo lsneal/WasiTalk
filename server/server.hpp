@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "info.hpp"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rsa.h>
@@ -10,22 +11,20 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-
+#include <vector>
 
 class   Server {
     
     public:
-        Server(int port);
-        ~Server();
+        Server(int port): _port(port) {}
+        ~Server() {}
 
+        int getPort() { return _port; }
     private:
-        int         server_fd;
-        int         port;
-        SSL_CTX*    ctx; 
-        std::unordered_map<int, SSL *> client_ssl; // fd + SSL connection /* faire classe client */
-        std::unordered_map<int, std::string pseudo> client_id; // fd + pseudo
-        std::unordered_map<int, EVP_PKEY *> client_id; // fd + public_key
-
+        int                 _serverFd;
+        int                 _port;
+        SSL_CTX*            _ctx; 
+        std::vector<Info>   _client;
 };
 
 #endif

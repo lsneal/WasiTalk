@@ -19,11 +19,11 @@ class   Client {
         ~Client();
 
     private:
-        int         client_fd;
-        int         server_port;
-        std::string server_ip;
-        SSL_CTX*    ctx;
-        SSL*        ssl;
+        int         _clientFd;
+        int         _serverPort;
+        std::string _serverIp;
+        SSL_CTX*    _ctx;
+        SSL*        _ssl;
 
 };
 
