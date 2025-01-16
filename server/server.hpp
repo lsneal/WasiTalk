@@ -31,6 +31,6 @@ class   Server {
         SSL_CTX*            _ctx; 
 };
 
-void    WaitingClientConnection(Server Server, int clientSocket, Info InfoClientc);
+void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClientc);
 
 #endif

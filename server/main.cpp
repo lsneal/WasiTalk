@@ -1,15 +1,7 @@
 #include "server.hpp"
 
-int main(int argc, char **argv) 
-{
 
-    int port = 9992;
-    Server Server(port);
-
-    std::cout << Server.getPort() << std::endl;
-
-
-    /*  INIT TCP SOCKET */
+int createServerSocket(int port) {
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -32,7 +24,19 @@ int main(int argc, char **argv)
     }
     std::cout << "Server listen on port: " << port << "..." << std::endl;
 
-    Info Info;
+    return serverSocket;
+}
+
+int main(int argc, char **argv) 
+{
+
+    int     port = 9994;
+    Server  Server(port);
+    Info    Info;
+
+    /*  INIT TCP SOCKET */
+    int serverSocket = createServerSocket(port);
+
     while (true) {
         sockaddr_in clientAddress;
         socklen_t clientAddressLen = sizeof(clientAddress);
@@ -45,7 +49,7 @@ int main(int argc, char **argv)
 
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
 
-        WaitingClientConnection(Server, clientSocket, Info);
+        WaitingClientConnection(&Server.client, clientSocket, Info);
 
         //close(clientSocket);
     }

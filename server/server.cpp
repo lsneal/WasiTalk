@@ -1,19 +1,19 @@
 #include "server.hpp"
 
-bool    pseudoIsOkey(Server Server, std::string pseudo) 
+bool    pseudoIsOkey(std::vector<Info> *client, std::string pseudo) 
 {
-    if (Server.client.size() == 0) {
+    if (client->size() == 0) {
         return true;
     }
 
-    for (int i = 0; i < Server.client.size(); i++) {
-        if (Server.client[i].getPseudo() == pseudo)
+    for (int i = 0; i < client->size(); i++) {
+        if ((*client)[i].getPseudo() == pseudo)
             return false;
     }
     return true;
 }
 
-void    SetClassClient(std::vector<Info> *client, int clientSocket, std::string pseudo, Info InfoClient) 
+void    SetClient(std::vector<Info> *client, int clientSocket, std::string pseudo, Info InfoClient) 
 {
     InfoClient.setFd(clientSocket);
     //InfoClient.setPemKey()
@@ -22,28 +22,49 @@ void    SetClassClient(std::vector<Info> *client, int clientSocket, std::string 
     client->push_back(InfoClient);
 }
 
-void    WaitingClientConnection(Server Server, int clientSocket, Info InfoClient) 
+void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClient) 
 {
 
     char buffer[4096];
     int bytesRead = 0;
-    const char  *connection_msg = "Enter your pseudo: ";
+    std::string connection_msg = "Enter your pseudo: ";
 
-    send(clientSocket, connection_msg, strlen(connection_msg), 0);
+    send(clientSocket, connection_msg.c_str(), strlen(connection_msg.c_str()), 0);
     //InfoClient.setFd(clientSocket);
     
     memset((char*)buffer, 0, sizeof(buffer));
     bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
 
-    std::cout << buffer << std::endl;
-    // check pseudo if okey --> client send all, and set class client
-    if (pseudoIsOkey(Server, buffer) == true)
-        SetClassClient(&Server.client, clientSocket, (std::string)buffer, InfoClient);
-    
-    // send au client les user connecter
+    if (pseudoIsOkey(client, buffer) == true)
+        SetClient(client, clientSocket, (std::string)buffer, InfoClient);
+
+    // list client coonnected
+    if (client->size() != 1) {
+        for (int i = 0; i < client->size(); i++) {
+            std::string connected = (*client)[i].getPseudo();
+            send(clientSocket, connected.c_str(), strlen(connected.c_str()), 0);
+        }
+        std::string com = "With what client ?\n";
+        send(clientSocket, com.c_str(), strlen(com.c_str()), 0);
+
+        memset((char*)buffer, 0, sizeof(buffer));
+        bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+
+        int session_fd = 0;
+        for (int i = 0; i < client->size(); i++) {
+            if ((*client)[i].getPseudo() == buffer) {
+                session_fd = (*client)[i].getFd();
+                break ; 
+            }
+        }
+        memset((char*)buffer, 0, sizeof(buffer));
+        bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+
+        send(session_fd, buffer, sizeof(buffer) - 1, 0);
+    }
     // lui demander de choisir un user avec lequel communiquer
     // et ensuite recup socket pseudo 
-    while (true) 
+    /*while (true) 
     {
         memset((char*)buffer, 0, sizeof(buffer));
         bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
@@ -55,5 +76,5 @@ void    WaitingClientConnection(Server Server, int clientSocket, Info InfoClient
 
         const char* response = "Message received!";
         send(clientSocket, response, strlen(response), 0);
-    }
+    }*/
 }
