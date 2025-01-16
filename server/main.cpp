@@ -1,5 +1,5 @@
 #include "server.hpp"
-
+#include <mutex>
 
 int createServerSocket(int port) {
 
@@ -30,7 +30,7 @@ int createServerSocket(int port) {
 int main(int argc, char **argv) 
 {
 
-    int     port = 9994;
+    int     port = atoi(argv[1]);
     Server  Server(port);
     Info    Info;
 
@@ -46,14 +46,17 @@ int main(int argc, char **argv)
             std::cerr << "Error: accept connection" << std::endl;
             continue;
         }
-
+        std::cout << "Socket: " << clientSocket << std::endl;
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
+        
+        //WaitingClientConnection(&Server.client, clientSocket, Info);
+        
+        std::thread clientThread(WaitingClientConnection, &Server.client, clientSocket, Info);
+        clientThread.detach();
+//    close(clientSocket);
 
-        WaitingClientConnection(&Server.client, clientSocket, Info);
 
-        //close(clientSocket);
     }
-
     close(serverSocket);
 
     return 0;

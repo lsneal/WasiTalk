@@ -15,6 +15,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <thread>
+#include <mutex>
 
 class   Server {
     
@@ -31,6 +33,6 @@ class   Server {
         SSL_CTX*            _ctx; 
 };
 
-void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClientc);
+void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClient);
 
 #endif

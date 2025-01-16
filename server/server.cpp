@@ -1,7 +1,10 @@
 #include "server.hpp"
 
+std::mutex clients_mutex; 
+
 bool    pseudoIsOkey(std::vector<Info> *client, std::string pseudo) 
 {
+    std::lock_guard<std::mutex> lock(clients_mutex);
     if (client->size() == 0) {
         return true;
     }
@@ -15,6 +18,7 @@ bool    pseudoIsOkey(std::vector<Info> *client, std::string pseudo)
 
 void    SetClient(std::vector<Info> *client, int clientSocket, std::string pseudo, Info InfoClient) 
 {
+    std::lock_guard<std::mutex> lock(clients_mutex);
     InfoClient.setFd(clientSocket);
     //InfoClient.setPemKey()
     //InfoClient.setSSL();
@@ -22,59 +26,127 @@ void    SetClient(std::vector<Info> *client, int clientSocket, std::string pseud
     client->push_back(InfoClient);
 }
 
-void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClient) 
+void    SendAll(std::vector<Info> *client, std::string leave_msg)
 {
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < client->size(); i++) {
+        send((*client)[i].getFd(), leave_msg.c_str(), strlen(leave_msg.c_str()), 0);
+    }
+}
 
+void SendConnectionMessage(std::vector<Info> *client, int clientSocket) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    std::string connection_msg = "Enter your pseudo: ";
+    send(clientSocket, connection_msg.c_str(), strlen(connection_msg.c_str()), 0);
+}
+
+void    SendClientList(std::vector<Info> *client, std::string pseudo, int clientSocket) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < client->size(); i++) {
+        if ((*client)[i].getPseudo() != pseudo) {
+            std::string connected = (*client)[i].getPseudo();
+            send(clientSocket, connected.c_str(), strlen(connected.c_str()), 0);
+        }
+    }
+}
+
+int     GetSessionFd(std::vector<Info> *client, std::string pseudo) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < client->size(); i++) 
+    {
+        if ((*client)[i].getPseudo() == pseudo)
+            return (*client)[i].getFd();
+    }
+    return -1; 
+}
+
+void    RemoveClient(std::vector<Info> *client, std::string pseudo) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);    
+    for (int i = 0; i < client->size(); i++) {
+        std::cout << "hi" << std::endl;
+        if ((*client)[i].getPseudo() == pseudo) { 
+            client->erase(client->begin() + i);
+            std::cout << "Remove size = " << client->size() << std::endl;
+            break ;
+        }
+    }
+}
+
+void relayMessage(std::vector<Info> *client, int fromSocket, int toSocket)
+{
+    char        buffer[4096];
+    int         bytesRead;
+    std::mutex  sendMutex;
+
+    while (true) 
+    {
+        memset((char*)buffer, 0, sizeof(buffer));
+        bytesRead = recv(fromSocket, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytesRead < 0) {
+            std::cerr << "Error: receiving message" << std::endl;
+            break ;
+        } 
+        else if (bytesRead == 0) {
+            //RemoveClient(client, std::string(buffer));
+            close(toSocket); 
+            break ;
+        }
+        else {
+            std::cout << "Received message: " << buffer << std::endl;
+            std::lock_guard<std::mutex> lock(sendMutex);
+            send(toSocket, buffer, bytesRead, 0);
+        }
+    }
+
+    //close(fromSocket);
+    //close(toSocket);
+}
+
+void WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClient) 
+{
     char buffer[4096];
     int bytesRead = 0;
-    std::string connection_msg = "Enter your pseudo: ";
-
-    send(clientSocket, connection_msg.c_str(), strlen(connection_msg.c_str()), 0);
-    //InfoClient.setFd(clientSocket);
     
-    memset((char*)buffer, 0, sizeof(buffer));
+    SendConnectionMessage(client, clientSocket);
+    memset((char *)buffer, 0, sizeof(buffer));
     bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+
+    std::string leave_msg = "Client leave: " + std::string(buffer);
+    if (bytesRead == 0) {
+        std::cout << "size list client = " << client->size() << std::endl;
+        SendAll(client, leave_msg);
+        RemoveClient(client, std::string(buffer));
+        //close(clientSocket);
+        //return ;
+    }
 
     if (pseudoIsOkey(client, buffer) == true)
         SetClient(client, clientSocket, (std::string)buffer, InfoClient);
 
-    // list client coonnected
-    if (client->size() != 1) {
-        for (int i = 0; i < client->size(); i++) {
-            std::string connected = (*client)[i].getPseudo();
-            send(clientSocket, connected.c_str(), strlen(connected.c_str()), 0);
-        }
-        std::string com = "With what client ?\n";
-        send(clientSocket, com.c_str(), strlen(com.c_str()), 0);
-
-        memset((char*)buffer, 0, sizeof(buffer));
-        bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-
-        int session_fd = 0;
-        for (int i = 0; i < client->size(); i++) {
-            if ((*client)[i].getPseudo() == buffer) {
-                session_fd = (*client)[i].getFd();
-                break ; 
-            }
-        }
-        memset((char*)buffer, 0, sizeof(buffer));
-        bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-
-        send(session_fd, buffer, sizeof(buffer) - 1, 0);
-    }
-    // lui demander de choisir un user avec lequel communiquer
-    // et ensuite recup socket pseudo 
-    /*while (true) 
+    if (client->size() != 1) 
     {
-        memset((char*)buffer, 0, sizeof(buffer));
+        SendClientList(client, std::string(buffer), clientSocket);
+    
+        memset((char *)buffer, 0, sizeof(buffer));
         bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-
-        if (bytesRead < 0)
-            std::cerr << "Error: receiving message" << std::endl;
-        else
-            std::cout << "Received message: " << buffer << std::endl;
-
-        const char* response = "Message received!";
-        send(clientSocket, response, strlen(response), 0);
-    }*/
+    
+        if (bytesRead == 0) {
+            std::cout << "size list client = " << client->size() << std::endl;
+            SendAll(client, leave_msg);
+            RemoveClient(client, std::string(buffer));
+        }
+            
+        int session_fd = GetSessionFd(client, std::string(buffer));
+    
+        std::thread relayThread1(relayMessage, client, clientSocket, session_fd);
+        std::thread relayThread2(relayMessage, client, session_fd, clientSocket);
+    
+        relayThread1.detach();
+        relayThread2.detach();
+    }
 }
