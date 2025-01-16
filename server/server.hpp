@@ -23,11 +23,14 @@ class   Server {
         ~Server() {}
 
         int getPort() { return _port; }
+
+        std::vector<Info>   client;
     private:
         int                 _serverFd;
         int                 _port;
         SSL_CTX*            _ctx; 
-        std::vector<Info>   _client;
 };
+
+void    WaitingClientConnection(Server Server, int clientSocket, Info InfoClientc);
 
 #endif

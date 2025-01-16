@@ -18,11 +18,20 @@ class Info {
         Info() {}
         ~Info() {}
 
+        void    setPseudo(std::string pseudo) { _pseudo = pseudo; }
+        void    setPemKey(std::string pem){ _pemKey = pem; }
+        void    setFd(int fd) { _fd = fd; }
+        void    setSSL(SSL *sslSession) { _sslSession = sslSession; }
+    
+        std::string getPseudo() { return _pseudo; }
+        std::string getPemKey() { return _pemKey; }
+        int         getFd() { return _fd; }
+        SSL         *getSSL() { return _sslSession; }
     private:
         int         _fd;
         SSL         *_sslSession;
         std::string _pseudo;
-        std::string _pem_key;
+        std::string _pemKey;
 
 };
 

@@ -1,10 +1,9 @@
 #include "server.hpp"
 
-
 int main(int argc, char **argv) 
 {
 
-    int port = 9999;
+    int port = 9992;
     Server Server(port);
 
     std::cout << Server.getPort() << std::endl;
@@ -33,6 +32,7 @@ int main(int argc, char **argv)
     }
     std::cout << "Server listen on port: " << port << "..." << std::endl;
 
+    Info Info;
     while (true) {
         sockaddr_in clientAddress;
         socklen_t clientAddressLen = sizeof(clientAddress);
@@ -45,10 +45,9 @@ int main(int argc, char **argv)
 
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
 
-        // Vous pouvez maintenant gerer la communication avec le client ici
-        // Par exemple, envoyer et recevoir des messages avec read() et write()
+        WaitingClientConnection(Server, clientSocket, Info);
 
-        close(clientSocket);
+        //close(clientSocket);
     }
 
     close(serverSocket);
