@@ -29,13 +29,14 @@ class   Server {
 
         int         GetPort() { return this->_port; }
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
-
+        SSL         *GetSessionSSL(std::string pseudo);
+        std::string GetUserWithSSL(SSL *ssl);
         std::vector<Info>   client;
 
-        void    SendConnectionMessage(int clientSocket);
+        void    SendConnectionMessage(int clientSocket, SSL *ssl);
         void    SendAll(std::string leave_msg);
         void    RemoveClient(std::string pseudo);
-        void    SendClientList(std::string pseudo, int clientSocket);
+        void    SendClientList(std::string pseudo, int clientSocket, SSL *ssl);
         void    SetClient(int clientSocket, std::string pseudo, SSL *ssl);
         bool    PseudoIsOkey(std::string pseudo);
         int     GetSessionFd(std::string pseudo);

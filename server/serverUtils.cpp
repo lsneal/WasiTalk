@@ -22,6 +22,7 @@ void    Server::SetClient(int clientSocket, std::string pseudo, SSL *ssl)
     this->client.push_back(newClient);
 }
 
+// modif with SSL
 void    Server::SendAll(std::string leave_msg)
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
@@ -30,20 +31,22 @@ void    Server::SendAll(std::string leave_msg)
     }
 }
 
-void    Server::SendConnectionMessage(int clientSocket) 
+void    Server::SendConnectionMessage(int clientSocket, SSL *ssl) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
     std::string connection_msg = "Enter your pseudo: ";
-    send(clientSocket, connection_msg.c_str(), strlen(connection_msg.c_str()), 0);
+    SSL_write(ssl, connection_msg.c_str(), strlen(connection_msg.c_str()));
+    //send(clientSocket, connection_msg.c_str(), strlen(connection_msg.c_str()), 0);
 }
 
-void    Server::SendClientList(std::string pseudo, int clientSocket) 
+void    Server::SendClientList(std::string pseudo, int clientSocket, SSL *ssl) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
     for (int i = 0; i < this->client.size(); i++) {
         if (client[i].getPseudo() != pseudo) {
             std::string connected = this->client[i].getPseudo();
-            send(clientSocket, connected.c_str(), strlen(connected.c_str()), 0);
+            //send(clientSocket, connected.c_str(), strlen(connected.c_str()), 0);
+            SSL_write(ssl, connected.c_str(), strlen(connected.c_str()));
         }
     }
 }
@@ -59,6 +62,17 @@ int    Server::GetSessionFd(std::string pseudo)
     return -1; 
 }
 
+SSL    *Server::GetSessionSSL(std::string pseudo) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < this->client.size(); i++) 
+    {
+        if (this->client[i].getPseudo() == pseudo)
+            return this->client[i].getSSL();
+    }
+    return NULL; 
+}
+
 void    Server::RemoveClient(std::string pseudo) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);    
@@ -69,4 +83,15 @@ void    Server::RemoveClient(std::string pseudo)
             break ;
         }
     }
+}
+
+std::string Server::GetUserWithSSL(SSL *ssl) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);    
+    for (int i = 0; i < this->client.size(); i++) {
+        if (this->client[i].getSSL() == ssl) { 
+            return this->client[i].getPseudo();
+        }
+    }
+    return NULL;
 }
