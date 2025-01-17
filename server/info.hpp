@@ -29,9 +29,9 @@ class Info {
         SSL         *getSSL() { return _sslSession; }
     private:
         int         _fd;
-        SSL         *_sslSession;
         std::string _pseudo;
         std::string _pemKey;
+        SSL         *_sslSession;
 
 };
 

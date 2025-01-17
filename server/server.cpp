@@ -16,12 +16,12 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
             break ;
         } 
         else if (bytesRead == 0) {
-           //    close(fromSocket);
+           // close(fromSocket);
            // close(toSocket); 
             return ;
         }
         else {
-            std::cout << "Received message: " << buffer << std::endl;
+            std::cout << from << " send: " << buffer << " at " << to << std::endl;
             std::lock_guard<std::mutex> lock(sendMutex);
             std::string format = from + ": " + std::string(buffer);
             SSL_write(toSocket, format.c_str(), strlen(format.c_str()));
@@ -37,7 +37,7 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     char buffer[1024];
     int bytesRead = 0;
     
-    Server.SendConnectionMessage(clientSocket, ssl);
+    Server.SendConnectionMessage(ssl);
     memset((char *)buffer, 0, sizeof(buffer));
     bytesRead = SSL_read(ssl, buffer, sizeof(buffer));
 
