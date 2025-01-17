@@ -27,12 +27,25 @@ class   Server {
         int getPort() { return _port; }
 
         std::vector<Info>   client;
+
+        void    SendConnectionMessage(int clientSocket);
+        void    SendAll(std::string leave_msg);
+        void    RemoveClient(std::string pseudo);
+        void    SendClientList(std::string pseudo, int clientSocket);
+        void    SetClient(int clientSocket, std::string pseudo);
+        bool    pseudoIsOkey(std::string pseudo);
+        int     GetSessionFd(std::string pseudo);
+
     private:
         int                 _serverFd;
         int                 _port;
         SSL_CTX*            _ctx; 
 };
 
-void    WaitingClientConnection(std::vector<Info> *client, int clientSocket, Info InfoClient);
+void    WaitingClientConnection(Server &Server, int clientSocket);
+
+
+/*      serverUtils        */
+
 
 #endif

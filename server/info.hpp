@@ -15,7 +15,7 @@
 class Info {
 
     public:
-        Info() {}
+        Info(int fd, std::string pseudo): _fd(fd), _pseudo(pseudo) {}
         ~Info() {}
 
         void    setPseudo(std::string pseudo) { _pseudo = pseudo; }

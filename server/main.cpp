@@ -27,17 +27,10 @@ int createServerSocket(int port) {
     return serverSocket;
 }
 
-int main(int argc, char **argv) 
+void    StartServer(int serverSocket, Server Server)  
 {
-
-    int     port = atoi(argv[1]);
-    Server  Server(port);
-    Info    Info;
-
-    /*  INIT TCP SOCKET */
-    int serverSocket = createServerSocket(port);
-
-    while (true) {
+    while (true) 
+    {
         sockaddr_in clientAddress;
         socklen_t clientAddressLen = sizeof(clientAddress);
 
@@ -49,14 +42,24 @@ int main(int argc, char **argv)
         std::cout << "Socket: " << clientSocket << std::endl;
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
         
-        //WaitingClientConnection(&Server.client, clientSocket, Info);
-        
-        std::thread clientThread(WaitingClientConnection, &Server.client, clientSocket, Info);
+        std::thread clientThread(WaitingClientConnection, std::ref(Server), clientSocket);
         clientThread.detach();
-//    close(clientSocket);
-
-
+        
+        //close(clientSocket);
     }
+}
+
+int main(int argc, char **argv) 
+{
+    int     port = atoi(argv[1]);
+    Server  Server(port);
+
+    /*  INIT TCP SOCKET */
+    int serverSocket = createServerSocket(port);
+
+    std::thread StartServerThread(StartServer, serverSocket, Server);
+    StartServerThread.join();
+
     close(serverSocket);
 
     return 0;
