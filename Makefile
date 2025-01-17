@@ -8,8 +8,8 @@ SERVER_SRC = $(wildcard $(SERVER_DIR)/*.cpp)
 CLIENT_SRC = $(wildcard $(CLIENT_DIR)/*.cpp)
 SERVER_OBJ = $(SERVER_SRC:.cpp=.o)
 CLIENT_OBJ = $(CLIENT_SRC:.cpp=.o)
-SERVER_EXEC = $(SERVER_DIR)/server
-CLIENT_EXEC = $(CLIENT_DIR)/client
+SERVER_EXEC = server_ex
+CLIENT_EXEC = client_ex
 CERT_SCRIPT = gen_cert.sh
 
 all: server client
