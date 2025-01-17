@@ -49,10 +49,9 @@ void WaitingClientConnection(Server &Server, int clientSocket)
         //return ;
     }
 
-    if (Server.pseudoIsOkey(buffer) == true)
+    if (Server.PseudoIsOkey(buffer) == true)
         Server.SetClient(clientSocket, (std::string)buffer);
 
-    std::cout << "size = " << Server.client.size() << std::endl;
     if (Server.client.size() != 1) 
     {
         Server.SendClientList(std::string(buffer), clientSocket);
