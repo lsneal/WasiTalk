@@ -15,7 +15,7 @@
 class Info {
 
     public:
-        Info(int fd, std::string pseudo): _fd(fd), _pseudo(pseudo) {}
+        Info(int fd, std::string pseudo, SSL *ssl): _fd(fd), _pseudo(pseudo), _sslSession(ssl) {}
         ~Info() {}
 
         void    setPseudo(std::string pseudo) { _pseudo = pseudo; }

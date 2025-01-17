@@ -2,7 +2,7 @@
 
 std::mutex clients_mutex; 
 
-bool    Server::pseudoIsOkey(std::string pseudo) 
+bool    Server::PseudoIsOkey(std::string pseudo) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (this->client.size() == 0) {
@@ -16,9 +16,9 @@ bool    Server::pseudoIsOkey(std::string pseudo)
     return true;
 }
 
-void    Server::SetClient(int clientSocket, std::string pseudo) 
+void    Server::SetClient(int clientSocket, std::string pseudo, SSL *ssl) 
 {
-    Info newClient(clientSocket, pseudo);
+    Info newClient(clientSocket, pseudo, ssl);
     this->client.push_back(newClient);
 }
 

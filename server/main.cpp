@@ -1,7 +1,8 @@
 #include "server.hpp"
 #include <mutex>
 
-int createServerSocket(int port) {
+int createServerSocket(int port) 
+{
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -39,23 +40,26 @@ void    StartServer(int serverSocket, Server Server)
             std::cerr << "Error: accept connection" << std::endl;
             continue;
         }
+
+        SSL *ssl = SSL_new(Server.GetContextSSL());
+        SSL_set_fd(ssl, clientSocket);
+        if (SSL_accept(ssl) == -1) {
+            std::cerr << "Error SSL acceptation" << std::endl;
+            return ;
+        }
+
         std::cout << "Socket: " << clientSocket << std::endl;
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
-        
-        std::thread clientThread(WaitingClientConnection, std::ref(Server), clientSocket);
+
+        std::thread clientThread(WaitingClientConnection, std::ref(Server), clientSocket, ssl);
         clientThread.detach();
         
+        //SSL_shutdown(ssl);
+        //SSL_free(ssl);
         //close(clientSocket);
     }
 }
 
-void InitOpenSSL() {
-    SSL_library_init();
-    OpenSSL_add_all_algorithms();
-    SSL_load_error_strings();
-    ERR_load_BIO_strings();
-    ERR_load_SSL_strings();
-}
 
 int main(int argc, char **argv) 
 {
@@ -64,29 +68,23 @@ int main(int argc, char **argv)
 
     InitOpenSSL();
     const SSL_METHOD    *method = TLS_server_method();
-    //SSL_CTX             *ctx = SSL_CTX_new(method);
-    Server.SetMethodSSL(context);
-    //if (!ctx)
-    //    return 1
+    Server.SetMethodSSL(method);
 
     // load cert and privatekey
     if (Server.LoadCertAndPrivateKey() == -1)
-        return 1
-    /*if (SSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM) <= 0 ||
-        SSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM) <= 0) {
-        std::cerr << "Error load cert or private key" << std::endl;
-        return 1
-    }*/
+        return 1;
 
     /*  INIT TCP SOCKET */
     int serverSocket = createServerSocket(port);
 
-    SSL* ssl = AcceptSSLConnection(server_sock, ctx);
-
     std::thread StartServerThread(StartServer, serverSocket, Server);
     StartServerThread.join();
 
+
     close(serverSocket);
+
+    SSL_CTX_free(Server.GetContextSSL());
+    EVP_cleanup();
 
     return 0;
 }

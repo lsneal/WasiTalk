@@ -32,14 +32,15 @@ void relayMessage(int fromSocket, int toSocket)
 }
 
 
-void WaitingClientConnection(Server &Server, int clientSocket) 
+void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
     char buffer[4096];
     int bytesRead = 0;
     
     Server.SendConnectionMessage(clientSocket);
     memset((char *)buffer, 0, sizeof(buffer));
-    bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+    //bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+    bytesRead = SSL_read(ssl, buffer, sizeof(buffer));
 
     std::string leave_msg = "Client leave: " + std::string(buffer);
     if (bytesRead == 0) {
@@ -49,8 +50,8 @@ void WaitingClientConnection(Server &Server, int clientSocket)
         //return ;
     }
 
-    if (Server.PseudoIsOkey(buffer) == true)
-        Server.SetClient(clientSocket, (std::string)buffer);
+    /*if (Server.PseudoIsOkey(buffer) == true)
+        Server.SetClient(clientSocket, (std::string)buffer, ssl);
 
     if (Server.client.size() != 1) 
     {
@@ -71,5 +72,5 @@ void WaitingClientConnection(Server &Server, int clientSocket)
     
         relayThread1.detach();
         relayThread2.detach();
-    }
+    }*/
 }
