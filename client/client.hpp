@@ -10,20 +10,37 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-
+#include <vector>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <thread>
+#include <mutex>
 
 class   Client {
     
     public:
-        Client(const std::string& server_ip, int server_port);
-        ~Client();
+        Client(const std::string& server_ip, int server_port): _serverIp(server_ip), _serverPort(server_port) {}
+        ~Client() {}
+
+        std::string GetServerIp() { return this->_serverIp; }
+        int         GetServerPort() { return this->_serverPort; }
+        SSL_CTX     *GetContextSSL() { return this->_ctx; }
+
+        bool connectToServer();
+        void sendMessage(const std::string message);
+        std::string receiveMessage();
+        void    SetMethodSSL(const SSL_METHOD *method) { 
+            this->_ctx = SSL_CTX_new(method); 
+            SSL_CTX_set_verify(this->_ctx, SSL_VERIFY_NONE, NULL);
+        };
 
     private:
-        int         _clientFd;
-        int         _serverPort;
         std::string _serverIp;
         SSL_CTX*    _ctx;
         SSL*        _ssl;
+        int         _serverPort;
+        int         _clientFd;
 
 };
 
