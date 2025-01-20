@@ -45,10 +45,12 @@ bool Client::connectToServer()
 
 void Client::sendMessage(const std::string message) 
 {
+    (void)message;
     std::cout << "send" << std::endl;
 }
 
 std::string Client::receiveMessage() 
 {
     std::cout << "recv" << std::endl;
+    return NULL;
 }

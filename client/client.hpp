@@ -32,7 +32,13 @@ class   Client {
         std::string receiveMessage();
         void    SetMethodSSL(const SSL_METHOD *method) { 
             this->_ctx = SSL_CTX_new(method); 
+
             SSL_CTX_set_verify(this->_ctx, SSL_VERIFY_NONE, NULL);
+            if (!SSL_CTX_load_verify_locations(this->_ctx, "server_cert.pem", NULL)) {
+                // Impossible de charger le certificat
+                std::cerr << "Error load cert" << std::endl;
+                exit(1);
+            }
         };
 
     private:

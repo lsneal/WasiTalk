@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     Server  Server(port);
 
     InitOpenSSL();
-    const SSL_METHOD    *method = TLS_server_method();
+    const SSL_METHOD    *method = SSLv23_server_method();
     Server.SetMethodSSL(method);
 
     // load cert and privatekey

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     Client  Client(argv[1], atoi(argv[2]));
 
     InitOpenSSL();
-    const SSL_METHOD *method = TLS_server_method();
+    const SSL_METHOD *method = SSLv23_client_method();
     Client.SetMethodSSL(method);
 
     std::cout << "IP: " << Client.GetServerIp() << std::endl;
@@ -26,9 +26,6 @@ int main(int argc, char **argv)
         std::cerr << "Error server connection" << std::endl;
         return 1;
     }
-
-
-
     return 0;
 
 }
