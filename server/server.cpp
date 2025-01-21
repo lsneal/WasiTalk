@@ -34,6 +34,7 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
 
 void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
+    // change buffer with vector 
     char buffer[1024];
     int bytesRead = 0;
     
@@ -56,7 +57,7 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
     if (Server.client.size() != 1) 
     {
-        Server.SendClientList(std::string(buffer), clientSocket, ssl);
+        Server.SendClientList(std::string(buffer), ssl);
     
         memset((char *)buffer, 0, sizeof(buffer));
         bytesRead = SSL_read(ssl, buffer, sizeof(buffer) - 1);

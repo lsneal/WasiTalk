@@ -31,7 +31,7 @@ class   Server {
 
         void    SendConnectionMessage(SSL *ssl);
         void    SendAll(std::string leave_msg);
-        void    SendClientList(std::string pseudo, int clientSocket, SSL *ssl);
+        void    SendClientList(std::string pseudo, SSL *ssl);
         void    RemoveClient(std::string pseudo);
         bool    PseudoIsOkey(std::string pseudo);
 

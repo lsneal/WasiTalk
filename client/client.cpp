@@ -80,6 +80,7 @@ void Client::CommunicateWithServer()
     memset((char *)buffer, 0, sizeof(buffer));
     //OPENSSL_cleanse(buffer, sizeof(buffer));
     int bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
+    // function for check bytes_read
 
     std::getline(std::cin, user_input);
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());

@@ -38,7 +38,7 @@ void    Server::SendConnectionMessage(SSL *ssl)
     SSL_write(ssl, connection_msg.c_str(), strlen(connection_msg.c_str()));
 }
 
-void    Server::SendClientList(std::string pseudo, int clientSocket, SSL *ssl) 
+void    Server::SendClientList(std::string pseudo, SSL *ssl) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
     for (int i = 0; i < (int)this->client.size(); i++) 

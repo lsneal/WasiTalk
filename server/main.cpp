@@ -63,6 +63,13 @@ void    StartServer(int serverSocket, Server Server)
 
 int main(int argc, char **argv) 
 {
+    if (argc != 2)
+        return 1;
+
+    std::string buffer;
+
+    memset((char *)buffer.c_str(), 0, sizeof(buffer.c_str()));
+
     int     port = atoi(argv[1]);
     Server  Server(port);
 

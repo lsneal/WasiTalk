@@ -1,4 +1,3 @@
-# Variables
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
 SSLFLAGS = -lssl -lcrypto
