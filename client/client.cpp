@@ -2,7 +2,6 @@
 
 bool Client::connectToServer() 
 {
-    // Créer un socket
     int _clientFd = socket(AF_INET, SOCK_STREAM, 0);
     if (_clientFd == -1) {
         std::cerr << "Erreur socket creation" << std::endl;
@@ -34,7 +33,7 @@ bool Client::connectToServer()
         return false;
     }
 
-    std::cout << "OKKKKKKKKK" << _serverIp << ":" << _serverPort << std::endl;
+    std::cout << "Connected: " << _serverIp << ":" << _serverPort << std::endl;
     return true;
 }
 
@@ -43,7 +42,7 @@ std::mutex sendMutex;
 void    ReceivMsg(SSL* _ssl)
 {
     char        buffer[1024];
-    int         bytes_read = 0;    
+    int         bytes_read = 0;
     while (true) 
     {
         bytes_read = SSL_read(_ssl, buffer, sizeof(buffer) - 1);
@@ -79,11 +78,10 @@ void Client::CommunicateWithServer()
     char        buffer[1024];
 
     memset((char *)buffer, 0, sizeof(buffer));
+    //OPENSSL_cleanse(buffer, sizeof(buffer));
     int bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
-    std::cout << buffer << std::endl;
 
     std::getline(std::cin, user_input);
-    std::cout << "'" << user_input << "'" << std::endl;
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());
 
     memset((char *)buffer, 0, sizeof(buffer));
@@ -99,16 +97,4 @@ void Client::CommunicateWithServer()
     ReceivMsgThread1.join();
     SendMsgThread1.join();
     
-}
-
-void Client::sendMessage(const std::string message) 
-{
-    (void)message;
-    std::cout << "send" << std::endl;
-}
-
-std::string Client::receiveMessage() 
-{
-    std::cout << "recv" << std::endl;
-    return NULL;
 }

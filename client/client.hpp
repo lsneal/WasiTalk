@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include <mutex>
+#include <cstring>
 
 class   Client {
     
@@ -23,14 +24,16 @@ class   Client {
         Client(const std::string& server_ip, int server_port): _serverIp(server_ip), _serverPort(server_port) {}
         ~Client() {}
 
-        std::string GetServerIp() { return this->_serverIp; }
-        int         GetServerPort() { return this->_serverPort; }
-        SSL_CTX     *GetContextSSL() { return this->_ctx; }
+        std::string     GetServerIp() { return this->_serverIp; }
+        int             GetServerPort() { return this->_serverPort; }
+        SSL_CTX         *GetContextSSL() { return this->_ctx; }
 
-        bool connectToServer();
-        void sendMessage(const std::string message);
-        std::string receiveMessage();
-        void    SetMethodSSL(const SSL_METHOD *method) { 
+        bool            connectToServer();
+        void            sendMessage(const std::string message);
+        void            CommunicateWithServer();
+        std::string     receiveMessage();
+
+        void            SetMethodSSL(const SSL_METHOD *method) { 
             this->_ctx = SSL_CTX_new(method); 
 
             /*  WARNING !!! Not secure for production  */
@@ -42,8 +45,6 @@ class   Client {
         };
 
 
-        void    CommunicateWithServer();
-
     private:
         std::string _serverIp;
         SSL_CTX*    _ctx;
@@ -51,5 +52,7 @@ class   Client {
         int         _serverPort;
 
 };
+
+bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
 
 #endif

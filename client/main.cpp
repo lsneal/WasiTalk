@@ -10,6 +10,18 @@ void InitOpenSSL()
 int main(int argc, char **argv)
 {
 
+    std::string publicKey;
+    std::string privateKey;
+
+    if (generateRSAKeys(publicKey, privateKey) == false) {
+        return 1;
+    }
+    else {
+        std::cout << publicKey << std::endl;
+        std::cout << privateKey << std::endl;
+        return 1;
+    }
+
     if (argc != 3)
         return 1;
     Client  Client(argv[1], atoi(argv[2]));
