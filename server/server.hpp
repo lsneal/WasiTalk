@@ -44,6 +44,7 @@ class   Server {
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
         SSL         *GetSessionSSL(std::string pseudo);
         std::string GetUserWithSSL(SSL *ssl);
+        std::string GetClientWithFd(int fd);
 
     private:
         int                 _serverFd;

@@ -33,20 +33,22 @@ class   Client {
         void    SetMethodSSL(const SSL_METHOD *method) { 
             this->_ctx = SSL_CTX_new(method); 
 
+            /*  WARNING !!! Not secure for production  */
             SSL_CTX_set_verify(this->_ctx, SSL_VERIFY_NONE, NULL);
             if (!SSL_CTX_load_verify_locations(this->_ctx, "server_cert.pem", NULL)) {
-                // Impossible de charger le certificat
                 std::cerr << "Error load cert" << std::endl;
                 exit(1);
             }
         };
+
+
+        void    CommunicateWithServer();
 
     private:
         std::string _serverIp;
         SSL_CTX*    _ctx;
         SSL*        _ssl;
         int         _serverPort;
-        int         _clientFd;
 
 };
 

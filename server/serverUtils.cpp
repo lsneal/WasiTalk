@@ -61,6 +61,17 @@ int    Server::GetSessionFd(std::string pseudo)
     return -1; 
 }
 
+std::string Server::GetClientWithFd(int fd)
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < (int)this->client.size(); i++) 
+    {
+        if (this->client[i].getFd() == fd)
+            return this->client[i].getPseudo();
+    }
+    return NULL; 
+}
+
 SSL    *Server::GetSessionSSL(std::string pseudo) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);

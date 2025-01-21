@@ -26,6 +26,8 @@ int main(int argc, char **argv)
         std::cerr << "Error server connection" << std::endl;
         return 1;
     }
+
+    Client.CommunicateWithServer();
     return 0;
 
 }

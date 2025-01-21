@@ -52,6 +52,8 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     if (Server.PseudoIsOkey(buffer) == true)
         Server.SetClient(clientSocket, (std::string)buffer, ssl);
 
+    std::cout << "'" << buffer << "'" << std::endl;
+
     if (Server.client.size() != 1) 
     {
         Server.SendClientList(std::string(buffer), clientSocket, ssl);
@@ -66,6 +68,8 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
             
         SSL *ssl_session = Server.GetSessionSSL(std::string(buffer));
         
+        std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
+
         std::thread relayThread1(relayMessage, ssl, ssl_session, \
                                     Server.GetUserWithSSL(ssl), Server.GetUserWithSSL(ssl_session));
         std::thread relayThread2(relayMessage, ssl_session, ssl, \
