@@ -38,6 +38,41 @@ bool Client::connectToServer()
     return true;
 }
 
+std::mutex sendMutex;
+
+void    ReceivMsg(SSL* _ssl)
+{
+    char        buffer[1024];
+    int         bytes_read = 0;    
+    while (true) 
+    {
+        bytes_read = SSL_read(_ssl, buffer, sizeof(buffer) - 1);
+        if (bytes_read > 0) 
+        {
+            std::lock_guard<std::mutex> lock(sendMutex);
+            buffer[bytes_read] = 0;
+            std::cout << buffer << std::endl;
+        } 
+        else
+        {
+            std::cout << "ERROR" << std::endl;
+            return ;
+        }
+    }
+}
+
+void    SendMsg(SSL* _ssl)
+{
+    std::string user_input;
+    
+    while (true) 
+    {
+        std::getline(std::cin, user_input);
+        std::lock_guard<std::mutex> lock(sendMutex);
+        SSL_write(_ssl, user_input.c_str(), user_input.length());
+    }
+}
+
 void Client::CommunicateWithServer()
 {
     std::string user_input;
@@ -58,37 +93,13 @@ void Client::CommunicateWithServer()
     std::getline(std::cin, user_input);
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());
 
-    while (true) 
-    {
-        memset((char *)buffer, 0, sizeof(buffer));
-        std::getline(std::cin, user_input);
+    std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
+    std::thread SendMsgThread1(SendMsg, this->_ssl);
 
-        std::cout << "USERMSG -->  " << user_input << std::endl;
-
-        SSL_write(this->_ssl, user_input.c_str(), user_input.length());
-
-        std::cout << "fpd" << std::endl;
-        //memset((char *)buffer, 0, sizeof(buffer));
-        bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
-        std::cout << bytes_read << std::endl;
-        if (bytes_read > 0) {
-            buffer[bytes_read - 1] = 0;
-            std::cout << "serveur: " << buffer << std::endl;
-        } 
-        else {
-            std::cout << "ERROR" << std::endl;
-            break;
-        }
-
-        memset((char *)buffer, 0, sizeof(buffer));
-        std::getline(std::cin, user_input);
-
-        std::cout << "USERMSG -->  " << user_input << std::endl;
-
-        SSL_write(this->_ssl, user_input.c_str(), user_input.length());
-    }
+    ReceivMsgThread1.join();
+    SendMsgThread1.join();
+    
 }
-
 
 void Client::sendMessage(const std::string message) 
 {
