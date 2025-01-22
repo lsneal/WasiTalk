@@ -36,8 +36,9 @@ class   Client {
         bool            connectToServer();
         void            sendMessage(const std::string message);
         void            CommunicateWithServer();
+        int             StartCommunicationWithServer(std::vector<char> buffer);
         std::string     receiveMessage();
-
+        
         void            SetMethodSSL(const SSL_METHOD *method) { 
             this->_ctx = SSL_CTX_new(method); 
 
@@ -48,6 +49,8 @@ class   Client {
                 exit(1);
             }
         };
+
+        void    EncryptMessagesWithRSA(); 
 
 
     private:
@@ -61,5 +64,6 @@ class   Client {
 };
 
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
+bool CheckBytesRead(int bytes_read, std::string message);
 
 #endif

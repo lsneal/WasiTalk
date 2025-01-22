@@ -62,7 +62,6 @@ class   Server {
 void    WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl);
 void    InitOpenSSL();
 
-/*      serverUtils        */
-
+bool    CheckBytesRead(int bytes_read, std::string message) ;
 
 #endif

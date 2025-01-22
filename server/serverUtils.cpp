@@ -18,6 +18,7 @@ bool    Server::PseudoIsOkey(std::string pseudo)
 
 void    Server::SetClient(int clientSocket, std::string pseudo, SSL *ssl) 
 {
+    std::lock_guard<std::mutex> lock(clients_mutex);
     Info newClient(clientSocket, pseudo, ssl);
     this->client.push_back(newClient);
 }
@@ -86,7 +87,8 @@ SSL    *Server::GetSessionSSL(std::string pseudo)
 void    Server::RemoveClient(std::string pseudo) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);    
-    for (int i = 0; i < (int)this->client.size(); i++) {
+    for (int i = 0; i < (int)this->client.size(); i++) 
+    {
         if (this->client[i].getPseudo() == pseudo) { 
             this->client.erase(this->client.begin() + i);
             std::cout << "Remove size = " << this->client.size() << std::endl;
@@ -98,7 +100,8 @@ void    Server::RemoveClient(std::string pseudo)
 std::string Server::GetUserWithSSL(SSL *ssl) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);    
-    for (int i = 0; i < (int)this->client.size(); i++) {
+    for (int i = 0; i < (int)this->client.size(); i++)
+    {
         if (this->client[i].getSSL() == ssl) { 
             return this->client[i].getPseudo();
         }
@@ -109,7 +112,8 @@ std::string Server::GetUserWithSSL(SSL *ssl)
 int         Server::GetIndexClient(int socketClient) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);    
-    for (int i = 0; i < (int)this->client.size(); i++) {
+    for (int i = 0; i < (int)this->client.size(); i++)
+    {
         if (this->client[i].getFd() == socketClient) { 
             return i;
         }
@@ -119,10 +123,15 @@ int         Server::GetIndexClient(int socketClient)
 
 void    Server::ReceiveRSAKey(SSL *ssl, int indexClient) 
 {
-    char buffer[4096];
-    memset((char *)buffer, 0, sizeof(buffer));
-    int bytesRead = SSL_read(ssl, buffer, sizeof(buffer) - 1);
+    std::lock_guard<std::mutex> lock(clients_mutex);  
+    std::vector<char>           buffer(4096);  
+    int                         bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
     
-    this->client[indexClient].setPemKey(buffer);
-    std::cout << "public:   " << this->client[indexClient].getPemKey() << std::endl;
+    if (CheckBytesRead(bytesRead, buffer.data()) == false)
+        return ;
+
+
+    buffer.assign(buffer.size(), 0);
+    this->client[indexClient].setPemKey(buffer.data());
+    std::cout << "'" << this->client[indexClient].getPemKey() << "'" << std::endl;
 }

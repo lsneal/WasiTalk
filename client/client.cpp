@@ -72,25 +72,64 @@ void    SendMsg(SSL* _ssl)
     }
 }
 
+bool     CheckBytesRead(int bytes_read, std::string message) 
+{
+    if (bytes_read > 0)
+        std::cout << message << std::endl;
+    else if (bytes_read == 0) 
+    {
+        std::cerr << "Connection close" << std::endl;
+        return false;
+    }
+    else
+    {
+        std::cerr << "Error read messages" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+
+int    Client::StartCommunicationWithServer(std::vector<char> buffer) 
+{
+    std::string         user_input;
+
+    // Receive server message for pseudo
+    buffer.assign(buffer.size(), 0);
+    int bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+    
+    if (CheckBytesRead(bytes_read, buffer.data()) == false)
+        return -1;
+    
+    // Write pseudo
+    std::getline(std::cin, user_input);
+    SSL_write(this->_ssl, user_input.c_str(), user_input.length());
+
+    // Send publickey RSA
+    buffer.assign(buffer.size(), 0);
+    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length() - 1);
+
+    // Read server message pseudo list
+    buffer.assign(buffer.size(), 0);
+    bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+
+    if (CheckBytesRead(bytes_read, buffer.data()) == false)
+        return -1;
+
+    // Enter pseudo list for communicate
+    std::getline(std::cin, user_input);
+    SSL_write(this->_ssl, user_input.c_str(), user_input.length());
+
+    return 1;
+}
+
 void Client::CommunicateWithServer()
 {
     std::vector<char>   buffer(1024);
-    std::string         user_input;
 
     //OPENSSL_cleanse(buffer, sizeof(buffer));
-    int bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
-    // function for check bytes_read
-
-    std::getline(std::cin, user_input);
-    SSL_write(this->_ssl, user_input.c_str(), user_input.length());
-
-    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length());
-
-    bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
-    std::cout << buffer.data() << std::endl;
-
-    std::getline(std::cin, user_input);
-    SSL_write(this->_ssl, user_input.c_str(), user_input.length());
+    if (StartCommunicationWithServer(buffer) == -1)
+        return ;
 
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
     std::thread SendMsgThread1(SendMsg, this->_ssl);
