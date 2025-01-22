@@ -105,3 +105,24 @@ std::string Server::GetUserWithSSL(SSL *ssl)
     }
     return NULL;
 }
+
+int         Server::GetIndexClient(int socketClient) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);    
+    for (int i = 0; i < (int)this->client.size(); i++) {
+        if (this->client[i].getFd() == socketClient) { 
+            return i;
+        }
+    }
+    return -1;
+}
+
+void    Server::ReceiveRSAKey(SSL *ssl, int indexClient) 
+{
+    char buffer[4096];
+    memset((char *)buffer, 0, sizeof(buffer));
+    int bytesRead = SSL_read(ssl, buffer, sizeof(buffer) - 1);
+    
+    this->client[indexClient].setPemKey(buffer);
+    std::cout << "public:   " << this->client[indexClient].getPemKey() << std::endl;
+}

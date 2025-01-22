@@ -21,7 +21,12 @@
 class   Client {
     
     public:
-        Client(const std::string& server_ip, int server_port): _serverIp(server_ip), _serverPort(server_port) {}
+        Client(const std::string& server_ip, int server_port,  \
+               const std::string& publicKey, const std::string& privateKey): \
+                    _serverIp(server_ip), \
+                    _serverPort(server_port), \
+                    _publicKey(publicKey), \
+                    _privateKey(privateKey) {}
         ~Client() {}
 
         std::string     GetServerIp() { return this->_serverIp; }
@@ -47,10 +52,12 @@ class   Client {
 
     private:
         std::string _serverIp;
+        int         _serverPort;
+        std::string _publicKey;
+        std::string _privateKey;
         SSL_CTX*    _ctx;
         SSL*        _ssl;
-        int         _serverPort;
-
+        
 };
 
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);

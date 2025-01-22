@@ -27,7 +27,6 @@ class   Server {
         Server(int port): _port(port) {}
         ~Server() {}
 
-        std::vector<Info>   client;
 
         void    SendConnectionMessage(SSL *ssl);
         void    SendAll(std::string leave_msg);
@@ -41,12 +40,16 @@ class   Server {
 
         int         GetSessionFd(std::string pseudo);
         int         GetPort() { return this->_port; }
+        int         GetIndexClient(int socketClient);
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
         SSL         *GetSessionSSL(std::string pseudo);
         std::string GetUserWithSSL(SSL *ssl);
         std::string GetClientWithFd(int fd);
 
+        void        ReceiveRSAKey(SSL *ssl, int indexClient);
+
     private:
+        std::vector<Info>   client;
         int                 _serverFd;
         int                 _port;
         SSL_CTX             *_ctx; // for certificat SSL/TLS

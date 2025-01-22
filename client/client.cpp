@@ -85,6 +85,8 @@ void Client::CommunicateWithServer()
     std::getline(std::cin, user_input);
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());
 
+    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length());
+
     memset((char *)buffer, 0, sizeof(buffer));
     bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
     std::cout << buffer << std::endl;

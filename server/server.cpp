@@ -53,10 +53,11 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     if (Server.PseudoIsOkey(buffer) == true)
         Server.SetClient(clientSocket, (std::string)buffer, ssl);
 
+    Server.ReceiveRSAKey(ssl, Server.GetIndexClient(clientSocket));
     std::cout << "'" << buffer << "'" << std::endl;
 
-    if (Server.client.size() != 1) 
-    {
+    //if (Server.client.size() != 1) 
+    //{
         Server.SendClientList(std::string(buffer), ssl);
     
         memset((char *)buffer, 0, sizeof(buffer));
@@ -78,5 +79,5 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     
         relayThread1.detach();
         relayThread2.detach();
-    }
+    //}
 }

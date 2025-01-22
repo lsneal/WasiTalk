@@ -9,22 +9,16 @@ void InitOpenSSL()
 
 int main(int argc, char **argv)
 {
+    if (argc != 3)
+        return 1;
 
     std::string publicKey;
     std::string privateKey;
 
-    if (generateRSAKeys(publicKey, privateKey) == false) {
+    if (generateRSAKeys(publicKey, privateKey) == false)
         return 1;
-    }
-    else {
-        std::cout << publicKey << std::endl;
-        std::cout << privateKey << std::endl;
-        return 1;
-    }
 
-    if (argc != 3)
-        return 1;
-    Client  Client(argv[1], atoi(argv[2]));
+    Client  Client(argv[1], atoi(argv[2]), publicKey, privateKey);
 
     InitOpenSSL();
     const SSL_METHOD *method = SSLv23_client_method();
