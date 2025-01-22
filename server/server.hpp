@@ -41,10 +41,12 @@ class   Server {
         int         GetSessionFd(std::string pseudo);
         int         GetPort() { return this->_port; }
         int         GetIndexClient(int socketClient);
+        int         GetClientSize() { return this->client.size();}
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
         SSL         *GetSessionSSL(std::string pseudo);
         std::string GetUserWithSSL(SSL *ssl);
         std::string GetClientWithFd(int fd);
+
 
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
 

@@ -41,16 +41,16 @@ std::mutex sendMutex;
 
 void    ReceivMsg(SSL* _ssl)
 {
-    char        buffer[1024];
-    int         bytes_read = 0;
+    std::vector<char>   buffer(1024);
+    int                 bytes_read = 0;
+
     while (true) 
     {
-        bytes_read = SSL_read(_ssl, buffer, sizeof(buffer) - 1);
+        bytes_read = SSL_read(_ssl, buffer.data(), buffer.size());
         if (bytes_read > 0) 
         {
             std::lock_guard<std::mutex> lock(sendMutex);
-            buffer[bytes_read] = 0;
-            std::cout << buffer << std::endl;
+            std::cout << buffer.data() << std::endl;
         } 
         else
         {
@@ -74,12 +74,11 @@ void    SendMsg(SSL* _ssl)
 
 void Client::CommunicateWithServer()
 {
-    std::string user_input;
-    char        buffer[1024];
+    std::vector<char>   buffer(1024);
+    std::string         user_input;
 
-    memset((char *)buffer, 0, sizeof(buffer));
     //OPENSSL_cleanse(buffer, sizeof(buffer));
-    int bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
+    int bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
     // function for check bytes_read
 
     std::getline(std::cin, user_input);
@@ -87,9 +86,8 @@ void Client::CommunicateWithServer()
 
     SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length());
 
-    memset((char *)buffer, 0, sizeof(buffer));
-    bytes_read = SSL_read(this->_ssl, buffer, sizeof(buffer) - 1);
-    std::cout << buffer << std::endl;
+    bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+    std::cout << buffer.data() << std::endl;
 
     std::getline(std::cin, user_input);
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());

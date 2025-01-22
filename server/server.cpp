@@ -2,14 +2,13 @@
 
 void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string to)
 {
-    char        buffer[4096];
-    int         bytesRead;
-    std::mutex  sendMutex;
+    std::vector<char>   buffer(1024);
+    int                 bytesRead;
+    std::mutex          sendMutex;
 
     while (true) 
     {
-        memset((char*)buffer, 0, sizeof(buffer));
-        bytesRead = SSL_read(fromSocket, buffer, sizeof(buffer));
+        bytesRead = SSL_read(fromSocket, buffer.data(), buffer.size());
 
         if (bytesRead < 0) {
             std::cerr << "Error: receiving message" << std::endl;
@@ -21,9 +20,9 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
             return ;
         }
         else {
-            std::cout << from << " send: " << buffer << " at " << to << std::endl;
+            std::cout << from << " send: " << buffer.data() << " at " << to << std::endl;
             std::lock_guard<std::mutex> lock(sendMutex);
-            std::string format = from + ": " + std::string(buffer);
+            std::string format = from + ": " + std::string(buffer.data());
             SSL_write(toSocket, format.c_str(), strlen(format.c_str()));
         }
     }
@@ -34,41 +33,39 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
 
 void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
-    // change buffer with vector 
-    char buffer[1024];
+    std::vector<char>   buffer(1024);
     int bytesRead = 0;
     
     Server.SendConnectionMessage(ssl);
-    memset((char *)buffer, 0, sizeof(buffer));
-    bytesRead = SSL_read(ssl, buffer, sizeof(buffer));
+    bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
 
-    std::string leave_msg = "Client leave: " + std::string(buffer);
+    std::string leave_msg = "Client leave: " + std::string(buffer.data());
     if (bytesRead == 0) {
         //Server.SendAll(leave_msg);
-        Server.RemoveClient(std::string(buffer));
+        Server.RemoveClient(buffer.data());
         //close(clientSocket);
         //return ;
     }
 
-    if (Server.PseudoIsOkey(buffer) == true)
-        Server.SetClient(clientSocket, (std::string)buffer, ssl);
+    if (Server.PseudoIsOkey(buffer.data()) == true)
+        Server.SetClient(clientSocket, buffer.data(), ssl);
 
     Server.ReceiveRSAKey(ssl, Server.GetIndexClient(clientSocket));
-    std::cout << "'" << buffer << "'" << std::endl;
+    std::cout << "'" << buffer.data() << "'" << std::endl;
 
-    //if (Server.client.size() != 1) 
-    //{
-        Server.SendClientList(std::string(buffer), ssl);
+    if (Server.GetClientSize() != 1) 
+    {
+        Server.SendClientList(std::string(buffer.data()), ssl);
     
-        memset((char *)buffer, 0, sizeof(buffer));
-        bytesRead = SSL_read(ssl, buffer, sizeof(buffer) - 1);
+        memset(buffer.data(), 0, buffer.size());
+        bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
     
         if (bytesRead == 0) {
             //Server.SendAll(leave_msg);
-            Server.RemoveClient(std::string(buffer));
+            Server.RemoveClient(buffer.data());
         }
             
-        SSL *ssl_session = Server.GetSessionSSL(std::string(buffer));
+        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
         
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
@@ -79,5 +76,5 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     
         relayThread1.detach();
         relayThread2.detach();
-    //}
+    }
 }
