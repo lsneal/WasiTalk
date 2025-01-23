@@ -123,12 +123,24 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     return 1;
 }
 
+int    Client::InitCommunicationWithRSA(std::vector<char> buffer) 
+{
+    // receive AES key
+    // decrypt message with privateKey
+    // save AES key
+    (void)buffer;
+    return 0 ;
+}
+
 void Client::CommunicateWithServer()
 {
     std::vector<char>   buffer(1024);
 
     //OPENSSL_cleanse(buffer, sizeof(buffer));
     if (StartCommunicationWithServer(buffer) == -1)
+        return ;
+
+    if (InitCommunicationWithRSA(buffer) == -1)
         return ;
 
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
