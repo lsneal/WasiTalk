@@ -17,6 +17,8 @@
 #include <arpa/inet.h>
 #include <thread>
 #include <mutex>
+#include <openssl/rand.h>
+#include <openssl/aes.h>
 
 #define CERT_FILE "server_cert.pem"
 #define KEY_SSL "private_key.pem"
@@ -28,15 +30,15 @@ class   Server {
         ~Server() {}
 
 
-        void    SendConnectionMessage(SSL *ssl);
-        void    SendAll(std::string leave_msg);
-        void    SendClientList(std::string pseudo, SSL *ssl);
-        void    RemoveClient(std::string pseudo);
-        bool    PseudoIsOkey(std::string pseudo);
+        void        SendConnectionMessage(SSL *ssl);
+        void        SendAll(std::string leave_msg);
+        void        SendClientList(std::string pseudo, SSL *ssl);
+        void        RemoveClient(std::string pseudo);
+        bool        PseudoIsOkey(std::string pseudo);
 
-        void    SetClient(int clientSocket, std::string pseudo, SSL *ssl);
-        void    SetMethodSSL(const SSL_METHOD *method);
-        int     LoadCertAndPrivateKey();
+        void        SetClient(int clientSocket, std::string pseudo, SSL *ssl);
+        void        SetMethodSSL(const SSL_METHOD *method);
+        int         LoadCertAndPrivateKey();
 
         int         GetSessionFd(std::string pseudo);
         int         GetPort() { return this->_port; }
@@ -46,9 +48,13 @@ class   Server {
         SSL         *GetSessionSSL(std::string pseudo);
         std::string GetUserWithSSL(SSL *ssl);
         std::string GetClientWithFd(int fd);
-
+        std::string GetPEMwithSSL(SSL *ssl);
 
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
+
+        /*   AES file   */
+        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session);
+
 
     private:
         std::vector<Info>   client;

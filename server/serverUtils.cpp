@@ -91,7 +91,6 @@ void    Server::RemoveClient(std::string pseudo)
     {
         if (this->client[i].getPseudo() == pseudo) { 
             this->client.erase(this->client.begin() + i);
-            std::cout << "Remove size = " << this->client.size() << std::endl;
             break ;
         }
     }
@@ -127,11 +126,23 @@ void    Server::ReceiveRSAKey(SSL *ssl, int indexClient)
     std::vector<char>           buffer(4096);  
     int                         bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
     
-    if (CheckBytesRead(bytesRead, buffer.data()) == false)
-        return ;
+    //if (CheckBytesRead(bytesRead, buffer.data()) == false)
+    //    return ;
 
-
-    buffer.assign(buffer.size(), 0);
+    std::cout << indexClient << std::endl;
     this->client[indexClient].setPemKey(buffer.data());
+    //std::cout << "PEM: " << std::endl;
     std::cout << "'" << this->client[indexClient].getPemKey() << "'" << std::endl;
+}
+
+std::string Server::GetPEMwithSSL(SSL *ssl) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);    
+    for (int i = 0; i < (int)this->client.size(); i++)
+    {
+        if (this->client[i].getSSL() == ssl) { 
+            return this->client[i].getPemKey();
+        }
+    }
+    return NULL;
 }

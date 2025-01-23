@@ -55,7 +55,6 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         Server.SetClient(clientSocket, buffer.data(), ssl);
 
     Server.ReceiveRSAKey(ssl, Server.GetIndexClient(clientSocket));
-    std::cout << "'" << buffer.data() << "'" << std::endl;
 
     if (Server.GetClientSize() != 1) 
     {
@@ -70,6 +69,9 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
         SSL *ssl_session = Server.GetSessionSSL(buffer.data());
         
+        // gen AES key --> encrypt key with RSA --> send message 2 client
+        Server.sendAESKeyForSession(ssl, ssl_session);
+
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
         std::thread relayThread1(relayMessage, ssl, ssl_session, \

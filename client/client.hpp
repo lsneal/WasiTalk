@@ -37,7 +37,7 @@ class   Client {
         void            sendMessage(const std::string message);
         void            CommunicateWithServer();
         int             StartCommunicationWithServer(std::vector<char> buffer);
-        int             InitCommunicationWithRSA(std::vector<char> buffer);
+        //int             InitCommunicationWithRSA(std::vector<char> buffer);
         std::string     receiveMessage();
         
         void            SetMethodSSL(const SSL_METHOD *method) { 
