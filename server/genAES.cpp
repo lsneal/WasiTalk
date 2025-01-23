@@ -2,7 +2,21 @@
 
 void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
 
-unsigned char    *EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message) 
+std::string string_to_hex(const std::string& input)
+{
+    static const char hex_digits[] = "0123456789ABCDEF";
+
+    std::string output;
+    output.reserve(input.length() * 2);
+    for (unsigned char c : input)
+    {
+        output.push_back(hex_digits[c >> 4]);
+        output.push_back(hex_digits[c & 15]);
+    }
+    return output;
+}
+
+std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message) 
 {
 
     /*
@@ -65,16 +79,18 @@ unsigned char    *EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned c
         std::cerr << "Error: encrypt message" << std::endl;
         return NULL;
     }
+    std::string hex = string_to_hex((const char *)encrypted.data());
+    std::cout << "'" << hex << "'" << std::endl;
 
     EVP_PKEY_CTX_free(ctx);
     EVP_PKEY_free(public_key);
     BIO_free(bio);
 
-    return encrypted.data();
+    return hex;
 }
 
 
-void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session)
+void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session, bool key1, bool key2)
 {
 
     std::vector<unsigned char>  key(AES_BLOCK_SIZE * 2);
@@ -85,17 +101,31 @@ void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session)
     std::string PEM1 = GetPEMwithSSL(ssl);
     std::string PEM2 = GetPEMwithSSL(ssl_session);
 
-    unsigned char   *firstKey = EncryptMessagesWithRSA(PEM1, key);
-    unsigned char   *firstIV = EncryptMessagesWithRSA(PEM1, iv);
+    ///unsigned char   *firstKey = EncryptMessagesWithRSA(PEM1, key, ssl, ssl_session);
+    ///unsigned char   *firstIV = EncryptMessagesWithRSA(PEM1, iv, ssl, ssl_session);
 
-    SSL_write(ssl, firstKey, sizeof(firstKey));
-    SSL_write(ssl, firstIV, sizeof(firstIV));
-    
-    unsigned char *secondKey = EncryptMessagesWithRSA(PEM2, key);
-    unsigned char *secondIV = EncryptMessagesWithRSA(PEM2, iv);
+    std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
+    std::string firstIV =  EncryptMessagesWithRSA(PEM1, key);
 
-    SSL_write(ssl_session, secondKey, sizeof(secondKey));
-    SSL_write(ssl_session, secondIV, sizeof(secondIV));
+
+    SSL_write(ssl, firstKey.c_str(), firstKey.size());
+    SSL_write(ssl, firstIV.c_str(), firstIV.size());
+    ///sleep(1);
+    ///key1 = true;
+
+    std::string secondKey =  EncryptMessagesWithRSA(PEM2, key);
+    std::string secondIV =  EncryptMessagesWithRSA(PEM2, key);
+
+    SSL_write(ssl_session, secondKey.c_str(), secondKey.size());
+    SSL_write(ssl_session, secondIV.c_str(), secondIV.size());
+
+    //unsigned char *secondKey = EncryptMessagesWithRSA(PEM2, key);
+    //unsigned char *secondIV = EncryptMessagesWithRSA(PEM2, iv);
+//
+    //SSL_write(ssl_session, secondKey, sizeof(secondKey));
+    //SSL_write(ssl_session, secondIV, sizeof(secondIV));
+    //sleep(1);
+    //key2 = true;
 
 }
 

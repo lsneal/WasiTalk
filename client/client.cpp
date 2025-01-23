@@ -123,28 +123,26 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     return 1;
 }
 
-int    InitCommunicationWithRSA(std::vector<char> buffer, SSL *_ssl) 
+int    Client::InitCommunicationWithRSA(std::vector<char> buffer) 
 {
-    while (true) 
-    {
-        buffer.assign(buffer.size(), 0);
-        int bytes_read = SSL_read(_ssl, buffer.data(), buffer.size());
-        if (CheckBytesRead(bytes_read, buffer.data()) == false)
-            return -1;
-
-        std::cout << "Key: " << buffer.data() << std::endl;
-
-        buffer.assign(buffer.size(), 0);
-        bytes_read = SSL_read(_ssl, buffer.data(), buffer.size());
-        if (CheckBytesRead(bytes_read, buffer.data()) == false)
-            return -1;
-        
-        std::cout << "IV: " << buffer.data() << std::endl;
-        // receive AES key
-        // decrypt message with privateKey
-        // save AES key
-        (void)buffer;
-    }
+    buffer.assign(buffer.size(), 0);
+    
+    int bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+    if (CheckBytesRead(bytes_read, buffer.data()) == false)
+        return -1;
+    
+    std::cout << "Key: " << buffer.data() << std::endl;
+    
+    buffer.assign(buffer.size(), 0);
+    bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+    if (CheckBytesRead(bytes_read, buffer.data()) == false)
+        return -1;
+    
+    std::cout << "IV: " << buffer.data() << std::endl;
+    // receive AES key
+    // decrypt message with privateKey
+    // save AES key
+    (void)buffer;
     return 0 ;
 }
 
@@ -156,12 +154,12 @@ void Client::CommunicateWithServer()
     if (StartCommunicationWithServer(buffer) == -1)
         return ;
 
-    std::thread ReceivAESkey(InitCommunicationWithRSA, buffer, this->_ssl);
-    
+//    if (InitCommunicationWithRSA(buffer) == -1)
+//        return ;
+
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
     std::thread SendMsgThread1(SendMsg, this->_ssl);
 
-    ReceivAESkey.join();
     ReceivMsgThread1.join();
     SendMsgThread1.join();
     

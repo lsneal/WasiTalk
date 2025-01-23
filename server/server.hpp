@@ -53,7 +53,7 @@ class   Server {
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
 
         /*   AES file   */
-        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session);
+        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session, bool key1, bool key2);
 
 
     private:

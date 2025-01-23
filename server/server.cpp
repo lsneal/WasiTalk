@@ -31,6 +31,11 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
     //close(toSocket);
 }
 
+bool key1 = false;
+bool key2 = false;
+
+std::mutex mtx; 
+
 void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
     std::vector<char>   buffer(1024);
@@ -70,17 +75,18 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         SSL *ssl_session = Server.GetSessionSSL(buffer.data());
         
         // gen AES key --> encrypt key with RSA --> send message 2 client
-        Server.sendAESKeyForSession(ssl, ssl_session);
+        Server.sendAESKeyForSession(ssl, ssl_session, key1, key2);
 
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
         std::thread relayThread1(relayMessage, ssl, ssl_session, \
-                                    Server.GetUserWithSSL(ssl), Server.GetUserWithSSL(ssl_session));
+                                        Server.GetUserWithSSL(ssl), Server.GetUserWithSSL(ssl_session));
         std::thread relayThread2(relayMessage, ssl_session, ssl, \
-                                    Server.GetUserWithSSL(ssl_session), Server.GetUserWithSSL(ssl));
-    
+                                        Server.GetUserWithSSL(ssl_session), Server.GetUserWithSSL(ssl));
+
         relayThread1.detach();
         relayThread2.detach();
+
     }
 }
 
