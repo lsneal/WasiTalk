@@ -129,10 +129,10 @@ void    Server::ReceiveRSAKey(SSL *ssl, int indexClient)
     //if (CheckBytesRead(bytesRead, buffer.data()) == false)
     //    return ;
 
-    std::cout << indexClient << std::endl;
+    //std::cout << indexClient << std::endl;
     this->client[indexClient].setPemKey(buffer.data());
     //std::cout << "PEM: " << std::endl;
-    std::cout << "'" << this->client[indexClient].getPemKey() << "'" << std::endl;
+    //std::cout << "'" << this->client[indexClient].getPemKey() << "'" << std::endl;
 }
 
 std::string Server::GetPEMwithSSL(SSL *ssl) 

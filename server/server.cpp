@@ -1,5 +1,8 @@
 #include "server.hpp"
 
+bool    AES1 = false;
+bool    AES2 = false;
+
 void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string to)
 {
     std::vector<char>   buffer(1024);
@@ -24,6 +27,7 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
             std::lock_guard<std::mutex> lock(sendMutex);
             std::string format = from + ": " + std::string(buffer.data());
             SSL_write(toSocket, format.c_str(), strlen(format.c_str()));
+            OPENSSL_cleanse(buffer.data(), buffer.size());
         }
     }
     
@@ -31,10 +35,19 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
     //close(toSocket);
 }
 
-bool key1 = false;
-bool key2 = false;
+void sendAESKeyToClient(SSL *ssl, const std::string &aesKey)
+{
+    int bytesSent = SSL_write(ssl, aesKey.c_str(), aesKey.length());
+    if (bytesSent < 0)
+    {
+        std::cerr << "Erreur lors de l'envoi de la clé AES" << std::endl;
+    } 
+    else {
+        std::cout << "Clé AES envoyée avec succès" << std::endl;
+        //OPENSSL_cleanse(aesKey.c_str(), aesKey.length());
+    }
+}
 
-std::mutex mtx; 
 
 void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
@@ -61,7 +74,7 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
     Server.ReceiveRSAKey(ssl, Server.GetIndexClient(clientSocket));
 
-    if (Server.GetClientSize() != 1) 
+    if (Server.GetClientSize() > 1) 
     {
         Server.SendClientList(std::string(buffer.data()), ssl);
     
@@ -75,7 +88,31 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         SSL *ssl_session = Server.GetSessionSSL(buffer.data());
         
         // gen AES key --> encrypt key with RSA --> send message 2 client
-        Server.sendAESKeyForSession(ssl, ssl_session, key1, key2);
+        //Server.sendAESKeyForSession(ssl, ssl_session);
+
+        /* ############################ */
+        //std::vector<unsigned char> key(1024);
+        //std::vector<unsigned char> iv(1024);
+        //generateAESKeyAndIV(key, iv);
+//
+        //std::string PEM1 = Server.GetPEMwithSSL(ssl);
+        //std::string PEM2 = Server.GetPEMwithSSL(ssl_session);
+//
+        //std::cout << "'" << PEM1 << "'" << std::endl;
+        //std::cout << "'" << PEM2 << "'" << std::endl;
+        //std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
+        //std::string firstIV =  EncryptMessagesWithRSA(PEM1, key);
+
+        //std::string KeyAndIV = firstKey + " : " + firstIV;
+
+        std::string KeyAndIV = "KEYYYYYYYYYYY";
+
+        std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);
+        std::thread sendKeyThread1(sendAESKeyToClient, ssl, KeyAndIV);
+        sendKeyThread2.detach();
+        sendKeyThread1.detach();
+
+        /* ############################# */
 
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 

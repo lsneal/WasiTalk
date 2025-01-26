@@ -29,7 +29,6 @@ class   Server {
         Server(int port): _port(port) {}
         ~Server() {}
 
-
         void        SendConnectionMessage(SSL *ssl);
         void        SendAll(std::string leave_msg);
         void        SendClientList(std::string pseudo, SSL *ssl);
@@ -53,7 +52,7 @@ class   Server {
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
 
         /*   AES file   */
-        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session, bool key1, bool key2);
+        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session);
 
 
     private:
@@ -69,5 +68,6 @@ void    WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl);
 void    InitOpenSSL();
 
 bool    CheckBytesRead(int bytes_read, std::string message) ;
-
+void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
+std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);
 #endif

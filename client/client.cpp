@@ -51,6 +51,7 @@ void    ReceivMsg(SSL* _ssl)
         {
             std::lock_guard<std::mutex> lock(sendMutex);
             std::cout << buffer.data() << std::endl;
+            OPENSSL_cleanse(buffer.data(), buffer.size());
         } 
         else
         {
@@ -69,6 +70,7 @@ void    SendMsg(SSL* _ssl)
         std::getline(std::cin, user_input);
         std::lock_guard<std::mutex> lock(sendMutex);
         SSL_write(_ssl, user_input.c_str(), user_input.length());
+        OPENSSL_cleanse(&user_input[0], user_input.size());
     }
 }
 
@@ -128,21 +130,16 @@ int    Client::InitCommunicationWithRSA(std::vector<char> buffer)
     buffer.assign(buffer.size(), 0);
     
     int bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
-    if (CheckBytesRead(bytes_read, buffer.data()) == false)
-        return -1;
+    //if (CheckBytesRead(bytes_read, buffer.data()) == false)
+    //    return -1;
     
-    std::cout << "Key: " << buffer.data() << std::endl;
+    std::string ivkey = buffer.data();
+
+    std::cout << "Key: " << "'" << ivkey << "'" << std::endl;
     
-    buffer.assign(buffer.size(), 0);
-    bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
-    if (CheckBytesRead(bytes_read, buffer.data()) == false)
-        return -1;
-    
-    std::cout << "IV: " << buffer.data() << std::endl;
     // receive AES key
     // decrypt message with privateKey
     // save AES key
-    (void)buffer;
     return 0 ;
 }
 

@@ -90,7 +90,7 @@ std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> m
 }
 
 
-void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session, bool key1, bool key2)
+void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session)
 {
 
     std::vector<unsigned char>  key(AES_BLOCK_SIZE * 2);
@@ -107,17 +107,22 @@ void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session, bool key1, bool
     std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
     std::string firstIV =  EncryptMessagesWithRSA(PEM1, key);
 
+    std::string KeyAndIV = firstKey + " : " + firstIV;
 
-    SSL_write(ssl, firstKey.c_str(), firstKey.size());
-    SSL_write(ssl, firstIV.c_str(), firstIV.size());
+    std::cout << "GENERATE AND SEND AES KEY" << std::endl;
+
+    SSL_write(ssl, KeyAndIV.c_str(), KeyAndIV.size());
+    //SSL_write(ssl, firstIV.c_str(), firstIV.size());
     ///sleep(1);
     ///key1 = true;
 
     std::string secondKey =  EncryptMessagesWithRSA(PEM2, key);
     std::string secondIV =  EncryptMessagesWithRSA(PEM2, key);
 
-    SSL_write(ssl_session, secondKey.c_str(), secondKey.size());
-    SSL_write(ssl_session, secondIV.c_str(), secondIV.size());
+    KeyAndIV = secondKey + " : " + secondIV;
+
+    SSL_write(ssl_session,  KeyAndIV.c_str(), KeyAndIV.size());
+    //SSL_write(ssl_session, secondIV.c_str(), secondIV.size());
 
     //unsigned char *secondKey = EncryptMessagesWithRSA(PEM2, key);
     //unsigned char *secondIV = EncryptMessagesWithRSA(PEM2, iv);
