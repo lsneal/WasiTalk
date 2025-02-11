@@ -118,10 +118,12 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     if (CheckBytesRead(bytes_read, buffer.data()) == false)
         return -1;
 
-    // Enter pseudo list for communicate
-    std::getline(std::cin, user_input);
-    SSL_write(this->_ssl, user_input.c_str(), user_input.length());
-
+    // Enter pseudo list for communicate or send code for solo user
+    std::string serv = "Solo on server";
+    if (serv.compare(buffer.data()) != 0) {
+        std::getline(std::cin, user_input);
+        SSL_write(this->_ssl, user_input.c_str(), user_input.length());
+    }
     return 1;
 }
 

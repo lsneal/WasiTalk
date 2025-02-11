@@ -81,11 +81,13 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         buffer.assign(buffer.size(), 0);
         bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
     
+        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
+        
         // remove vector <Info> if client leave
         if (CheckBytesRead(bytesRead, buffer.data()) == false)
             return ;
 
-        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
+        //SSL *ssl_session = Server.GetSessionSSL(buffer.data());
         
         // gen AES key --> encrypt key with RSA --> send message 2 client
         //Server.sendAESKeyForSession(ssl, ssl_session);
@@ -124,6 +126,10 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         relayThread1.detach();
         relayThread2.detach();
 
+    }
+    else {
+        std::string message = "Solo on server";
+        SSL_write(ssl, message.c_str(), strlen(message.c_str()));
     }
 }
 
