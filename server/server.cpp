@@ -48,26 +48,31 @@ void sendAESKeyToClient(SSL *ssl, const std::string &aesKey)
     }
 }
 
+bool readFromSSL(SSL* ssl, std::vector<char>& buffer) {
+    int bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
+    if (CheckBytesRead(bytesRead, buffer.data()) == false) {
+        return false;
+    }
+    return true;
+}
 
 void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl) 
 {
     std::vector<char>   buffer(1024);
-    int bytesRead = 0;
     
     Server.SendConnectionMessage(ssl);
     buffer.assign(buffer.size(), 0);
-    bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
-    
-    if (CheckBytesRead(bytesRead, buffer.data()) == false)
+
+    if (readFromSSL(ssl, buffer) == false)
         return ;
 
-    std::string leave_msg = "Client leave: " + std::string(buffer.data());
+    /*std::string leave_msg = "Client leave: " + std::string(buffer.data());
     if (bytesRead == 0) {
         //Server.SendAll(leave_msg);
         Server.RemoveClient(buffer.data());
         //close(clientSocket);
         //return ;
-    }
+    }*/
 
     if (Server.PseudoIsOkey(buffer.data()) == true)
         Server.SetClient(clientSocket, buffer.data(), ssl);
@@ -79,34 +84,34 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         Server.SendClientList(std::string(buffer.data()), ssl);
     
         buffer.assign(buffer.size(), 0);
-        bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
-    
-        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
-        
-        // remove vector <Info> if client leave
-        if (CheckBytesRead(bytesRead, buffer.data()) == false)
-            return ;
+        if (readFromSSL(ssl, buffer) == false)
+        return ;
 
-        //SSL *ssl_session = Server.GetSessionSSL(buffer.data());
-        
+        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
+
         // gen AES key --> encrypt key with RSA --> send message 2 client
         //Server.sendAESKeyForSession(ssl, ssl_session);
 
         /* ############################ */
-        //std::vector<unsigned char> key(1024);
-        //std::vector<unsigned char> iv(1024);
-        //generateAESKeyAndIV(key, iv);
+        std::vector<unsigned char> key(1024);
+        std::vector<unsigned char> iv(1024);
+        generateAESKeyAndIV(key, iv);
+
+        //std::cout << "IV: " << iv.data() << std::endl;
+        //std::cout << "KEY: " << key.data() << std::endl;
+        std::string PEM1 = Server.GetPEMwithSSL(ssl);
+        std::string PEM2 = Server.GetPEMwithSSL(ssl_session);
 //
-        //std::string PEM1 = Server.GetPEMwithSSL(ssl);
-        //std::string PEM2 = Server.GetPEMwithSSL(ssl_session);
-//
-        //std::cout << "'" << PEM1 << "'" << std::endl;
-        //std::cout << "'" << PEM2 << "'" << std::endl;
-        //std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
+        std::cout << "'" << PEM1 << "'" << std::endl;
+        std::cout << "'" << PEM2 << "'" << std::endl;
+        std::cout << "KEY === " << key.data() << std::endl;
+        std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
         //std::string firstIV =  EncryptMessagesWithRSA(PEM1, key);
 
         //std::string KeyAndIV = firstKey + " : " + firstIV;
 
+        std::cout << firstKey << std::endl;
+        std::cout << "keyy" << std::endl;
         std::string KeyAndIV = "KEYYYYYYYYYYY";
 
         std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);
@@ -115,7 +120,6 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         sendKeyThread1.detach();
 
         /* ############################# */
-
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
         std::thread relayThread1(relayMessage, ssl, ssl_session, \
@@ -127,7 +131,8 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         relayThread2.detach();
 
     }
-    else {
+    else 
+    {
         std::string message = "Solo on server";
         SSL_write(ssl, message.c_str(), strlen(message.c_str()));
     }

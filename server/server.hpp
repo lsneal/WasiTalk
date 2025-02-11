@@ -19,6 +19,7 @@
 #include <mutex>
 #include <openssl/rand.h>
 #include <openssl/aes.h>
+#include <iomanip>
 
 #define CERT_FILE "server_cert.pem"
 #define KEY_SSL "private_key.pem"
@@ -70,4 +71,7 @@ void    InitOpenSSL();
 bool    CheckBytesRead(int bytes_read, std::string message) ;
 void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
 std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);
+std::string string_to_hex(const std::string &input);
+
+
 #endif
