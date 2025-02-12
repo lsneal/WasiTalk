@@ -53,7 +53,8 @@ int main(void)
     convertToHex(iv, ivHex);
     std::cout << "'" << ivHex.data() << "'" << std::endl;
 
-    
+    std::string aes = EncryptMessagesWithRSA(publick, keyHex);
+    std::cout << "AES key encrypt --> " << aes << std::endl;
 
     return 1;
 }
