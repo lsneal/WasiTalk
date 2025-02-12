@@ -50,8 +50,8 @@ std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> m
     }
 
     // convert binary to hexa for encrypt 
-    std::string data = convertToHex(message);
-    std::cout << "data = " << data << std::endl;
+    std::vector<unsigned char> messageHex(64);
+    convertToHex(message, messageHex);
 
     size_t encrypted_size;
     if (EVP_PKEY_encrypt(ctx, NULL, &encrypted_size, \

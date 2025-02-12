@@ -1,20 +1,24 @@
 #include "test.hpp"
 
-std::string convertToHex(std::vector<unsigned char> data)
+void convertToHex(std::vector<unsigned char>& data, std::vector<unsigned char> &hex_data)
 {
     std::stringstream ss;
 
-    size_t last_non_zero = data.size() - 1;
-    while (last_non_zero > 0 && data[last_non_zero] == 0) {
-        last_non_zero--;
-    }
-
-    for (size_t i = 0; i <= last_non_zero; ++i) {
+    // Convert each byte to its hexadecimal representation
+    for (size_t i = 0; i < data.size(); ++i) {
         ss << std::hex << std::setw(2) << std::setfill('0') << (int)data[i];
     }
-    
-    return ss.str();
+
+    // Get the hex string from the stringstream
+    std::string hex_string = ss.str();
+    std::cout << hex_string << std::endl;
+    // Resize the output vector to fit the hex string
+    hex_data.resize(hex_string.size());
+
+    // Copy the hex string to the output vector
+    std::copy(hex_string.begin(), hex_string.end(), hex_data.begin());
 }
+
 
 std::string string_to_hex(const std::string &input)
 {
@@ -37,16 +41,19 @@ int main(void)
     generateRSAKeys(publick, privatek);
     std::cout << publick << std::endl;
 
-    std::vector<unsigned char> key(1024);
-    std::vector<unsigned char> iv(1024);
+    std::vector<unsigned char> key(64);
+    std::vector<unsigned char> keyHex(64);
+    std::vector<unsigned char> iv(32);
+    std::vector<unsigned char> ivHex(32);
     generateAESKeyAndIV(key, iv);
 
-    std::string keyhex = convertToHex(key);
-    std::cout << "'" << keyhex << "'" << std::endl;
+    convertToHex(key, keyHex);
+    std::cout << "'" << keyHex.data() << "'" << std::endl;
 
-    //std::string ivhex = convertToHex(iv);
-    //std::cout << "'" << ivhex << "'" << std::endl;
+    convertToHex(iv, ivHex);
+    std::cout << "'" << ivHex.data() << "'" << std::endl;
 
+    
 
     return 1;
 }
