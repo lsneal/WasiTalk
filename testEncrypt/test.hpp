@@ -20,11 +20,11 @@
 #include <openssl/aes.h>
 #include <iomanip>
 
-std::string convertToHex(std::vector<unsigned char> data);
+void convertToHex(std::vector<unsigned char> &data, std::vector<unsigned char> &hex_data);
 std::string string_to_hex(const std::string &input);
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
 std::string ConvertKeyOnStrings(BIO *bio);
 void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
-
-
+std::string DecryptMessagesWithRSA(std::string PEM, const std::string encrypted);
+std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);    
 #endif
