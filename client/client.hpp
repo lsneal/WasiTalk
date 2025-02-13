@@ -27,7 +27,12 @@ class   Client {
                     _serverPort(server_port), \
                     _publicKey(publicKey), \
                     _privateKey(privateKey) {}
-        ~Client() {}
+        ~Client() {
+            if (this->_ctx)
+                SSL_CTX_free(this->_ctx);
+            if (this->_ssl)
+                SSL_free(this->_ssl);
+        }
 
         std::string     GetServerIp() { return this->_serverIp; }
         int             GetServerPort() { return this->_serverPort; }

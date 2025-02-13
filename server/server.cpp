@@ -18,8 +18,10 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
             break ;
         } 
         else if (bytesRead == 0) {
-           // close(fromSocket);
-           // close(toSocket); 
+            std::string disconnected = from + " disconnected";
+            SSL_write(toSocket, disconnected.c_str(), disconnected.length());
+            SSL_shutdown(toSocket);
+            SSL_shutdown(fromSocket);
             return ;
         }
         else {
@@ -30,9 +32,6 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
             OPENSSL_cleanse(buffer.data(), buffer.size());
         }
     }
-    
-    //close(fromSocket);
-    //close(toSocket);
 }
 
 void sendAESKeyToClient(SSL *ssl, const std::string &aesKey)

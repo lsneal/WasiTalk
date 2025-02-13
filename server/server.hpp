@@ -28,7 +28,12 @@ class   Server {
     
     public:
         Server(int port): _port(port) {}
-        ~Server() {}
+        ~Server() {
+            if (this->_ctx)
+                SSL_CTX_free(this->_ctx);
+            if (this->_ssl)
+                SSL_free(this->_ssl);
+        }
 
         void        SendConnectionMessage(SSL *ssl);
         void        SendAll(std::string leave_msg);

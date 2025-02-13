@@ -45,6 +45,8 @@ void    StartServer(int serverSocket, Server Server)
         SSL_set_fd(ssl, clientSocket);
         if (SSL_accept(ssl) == -1) {
             std::cerr << "Error SSL acceptation" << std::endl;
+            close(clientSocket);
+            SSL_free(ssl);
             return ;
         }
 
