@@ -94,10 +94,10 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
         std::string KeyAndIV = "KEYYYYYYYYYYY";
 
-        std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);
+        /*std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);
         std::thread sendKeyThread1(sendAESKeyToClient, ssl, KeyAndIV);
         sendKeyThread2.detach();
-        sendKeyThread1.detach();
+        sendKeyThread1.detach();*/
 
         /* ############################# */
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
