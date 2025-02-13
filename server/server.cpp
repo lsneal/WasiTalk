@@ -5,7 +5,7 @@ bool    AES2 = false;
 
 void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string to)
 {
-    std::vector<char>   buffer(1024);
+    std::vector<char>   buffer(4096);
     int                 bytesRead;
     std::mutex          sendMutex;
 
@@ -38,12 +38,11 @@ void relayMessage(SSL *fromSocket, SSL *toSocket, std::string from, std::string 
 void sendAESKeyToClient(SSL *ssl, const std::string &aesKey)
 {
     int bytesSent = SSL_write(ssl, aesKey.c_str(), aesKey.length());
-    if (bytesSent < 0)
-    {
-        std::cerr << "Erreur lors de l'envoi de la clé AES" << std::endl;
+    if (bytesSent < 0) {
+        std::cerr << "Error: send AES key" << std::endl;
     } 
     else {
-        std::cout << "Clé AES envoyée avec succès" << std::endl;
+        std::cout << "Key send" << std::endl;
         //OPENSSL_cleanse(aesKey.c_str(), aesKey.length());
     }
 }
@@ -85,33 +84,14 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
     
         buffer.assign(buffer.size(), 0);
         if (readFromSSL(ssl, buffer) == false)
-        return ;
+            return ;
 
         SSL *ssl_session = Server.GetSessionSSL(buffer.data());
 
-        // gen AES key --> encrypt key with RSA --> send message 2 client
-        //Server.sendAESKeyForSession(ssl, ssl_session);
+        // send rsa key at client for encrypt aes
+        // receive aes and iv
+        // send message at session client 
 
-        /* ############################ */
-        std::vector<unsigned char> key(1024);
-        std::vector<unsigned char> iv(1024);
-        generateAESKeyAndIV(key, iv);
-
-        //std::cout << "IV: " << iv.data() << std::endl;
-        //std::cout << "KEY: " << key.data() << std::endl;
-        std::string PEM1 = Server.GetPEMwithSSL(ssl);
-        std::string PEM2 = Server.GetPEMwithSSL(ssl_session);
-//
-        std::cout << "'" << PEM1 << "'" << std::endl;
-        std::cout << "'" << PEM2 << "'" << std::endl;
-        std::cout << "KEY === " << key.data() << std::endl;
-        std::string firstKey =  EncryptMessagesWithRSA(PEM1, key);
-        //std::string firstIV =  EncryptMessagesWithRSA(PEM1, key);
-
-        //std::string KeyAndIV = firstKey + " : " + firstIV;
-
-        std::cout << firstKey << std::endl;
-        std::cout << "keyy" << std::endl;
         std::string KeyAndIV = "KEYYYYYYYYYYY";
 
         std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);

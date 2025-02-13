@@ -41,7 +41,7 @@ std::mutex sendMutex;
 
 void    ReceivMsg(SSL* _ssl)
 {
-    std::vector<char>   buffer(1024);
+    std::vector<char>   buffer(4096);
     int                 bytes_read = 0;
 
     while (true) 
@@ -120,10 +120,27 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
 
     // Enter pseudo list for communicate or send code for solo user
     std::string serv = "Solo on server";
-    if (serv.compare(buffer.data()) != 0) {
+    if (serv.compare(buffer.data()) != 0) 
+    {
+        std::cout << "RECEIVE RSA" << std::endl;
         std::getline(std::cin, user_input);
         SSL_write(this->_ssl, user_input.c_str(), user_input.length());
+    
+        // generate aes and iv
+        std::string aes = "aes key";
+
+        // receive rsa key
+        bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+        if (CheckBytesRead(bytes_read, buffer.data()) == false)
+            return -1;
+
+        std::cout << "RSA: " << buffer.data() << std::endl;
+        // encrypt aes and iv with rsa
+        // send message at server 
+        return 1;
     }
+    std::cout << "YOOOOO" << std::endl;
+    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length());
     return 1;
 }
 
