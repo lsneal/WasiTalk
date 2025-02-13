@@ -1,6 +1,6 @@
 #include "test.hpp"
 
-std::string DecryptMessagesWithRSA(std::string PEM, const std::string encrypted)
+std::string DecryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> encrypted)
 {
     /*
         Load PrivateKey with PEM format

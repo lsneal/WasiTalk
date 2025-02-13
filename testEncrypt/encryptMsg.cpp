@@ -68,13 +68,15 @@ std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> m
         std::cerr << "Error: encrypt message" << std::endl;
         return NULL;
     }
+    //std::cout << "Encrypted data: " <<  "'" << encrypted.data() << "'" << std::endl;
     //std::string hex = string_to_hex((const char *)encrypted.data());
     //std::cout << "'" << hex << "'" << std::endl;
+    std::string hex = base64_encode(encrypted);
 
     EVP_PKEY_CTX_free(ctx);
     EVP_PKEY_free(public_key);
     BIO_free(bio);
 
-    return encrypted.data();
-    //return hex;
+    //return encrypted.data();
+    return hex;
 }
