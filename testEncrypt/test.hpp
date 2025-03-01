@@ -25,7 +25,7 @@ std::string string_to_hex(const std::string &input);
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
 std::string ConvertKeyOnStrings(BIO *bio);
 void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
-std::string DecryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);
-std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);    
+std::string DecryptAESWithRSA(std::string PEM, std::vector<unsigned char> message);
+std::string EncryptAESWithRSA(std::string PEM, std::vector<unsigned char> message);    
 std::string base64_encode(std::vector<unsigned char> data);
 #endif

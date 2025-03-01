@@ -91,7 +91,6 @@ bool     CheckBytesRead(int bytes_read, std::string message)
     return true;
 }
 
-
 int    Client::StartCommunicationWithServer(std::vector<char> buffer) 
 {
     std::string         user_input;
@@ -135,7 +134,11 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
         std::cout << "RSA key receive" << std::endl;
 
         //std::cout << "RSA: " << buffer.data() << std::endl;
+        //std::string public_key(buffer.begin(), buffer.end());
         std::string public_key = buffer.data();
+        std::cout << "FDP= " << public_key << std::endl;
+        std::string pbk = extractPublicKey(public_key);
+        std::cout << "'" << pbk << "'" << std::endl;
         EncryptAndSendAES(public_key);
 
         // encrypt aes and iv with rsa
