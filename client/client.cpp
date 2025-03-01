@@ -113,6 +113,7 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
 
     // Read server message pseudo list
     buffer.assign(buffer.size(), 0);
+    std::cout << "List of user connected: \n" << std::endl;
     bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
 
     if (CheckBytesRead(bytes_read, buffer.data()) == false)
@@ -122,7 +123,7 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     std::string serv = "Solo on server";
     if (serv.compare(buffer.data()) != 0) 
     {
-        std::cout << "RECEIVE RSA" << std::endl;
+        std::cout << "" << std::endl;
         std::getline(std::cin, user_input);
         SSL_write(this->_ssl, user_input.c_str(), user_input.length());
     
@@ -131,10 +132,12 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
 
         // receive rsa key
         bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
-        if (CheckBytesRead(bytes_read, buffer.data()) == false)
-            return -1;
+        std::cout << "RSA key receive" << std::endl;
 
-        std::cout << "RSA: " << buffer.data() << std::endl;
+        //std::cout << "RSA: " << buffer.data() << std::endl;
+        std::string public_key = buffer.data();
+        EncryptAndSendAES(public_key);
+
         // encrypt aes and iv with rsa
         // send message at server 
         return 1;

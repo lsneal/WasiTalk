@@ -1,11 +1,12 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <netinet/in.h>
+#include <openssl/rand.h>
 #include <unordered_map>
 #include <string>
 #include <iostream>
@@ -17,6 +18,9 @@
 #include <thread>
 #include <mutex>
 #include <cstring>
+#include <iomanip>
+
+#define AES_BLOCK_SIZE 32
 
 class   Client {
     
@@ -57,6 +61,7 @@ class   Client {
         };
 
         void    EncryptMessagesWithRSA(std::string message); 
+        void    EncryptAndSendAES(std::string public_key);
 
 
     private:
@@ -71,5 +76,16 @@ class   Client {
 
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
 bool CheckBytesRead(int bytes_read, std::string message);
+
+// AES
+
+std::string DecryptAESWithRSA(std::string PEM, std::vector<unsigned char> encrypted);
+std::string EncryptAESWithRSA(std::string PEM, std::vector<unsigned char> message);
+
+std::vector<unsigned char>  base64_decode(const std::string& encoded_string);
+std::string                 base64_encode(std::vector<unsigned char> data);
+void                        convertToHex(std::vector<unsigned char>& data, std::vector<unsigned char> &hex_data);
+void                        generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
+
 
 #endif

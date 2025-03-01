@@ -1,4 +1,26 @@
-#include "test.hpp"
+#include "client.hpp"
+
+void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv)
+{
+    /*
+        Generate Key --> 256 bits
+    */
+    if (RAND_bytes(key.data(), AES_BLOCK_SIZE * 4) != 1) {
+        std::cerr << "Error: generation AES key" << std::endl;
+        return ;
+    }
+    
+    /*
+        Generate IV --> 128 bits
+    */
+    if (RAND_bytes(iv.data(), AES_BLOCK_SIZE * 2) != 1) {
+        std::cerr << "Error: generation initialization vector" << std::endl;
+        return ;
+    }
+
+    //std::cout << "KEY: " << string_to_hex(key.data()) << std::endl; 
+    //std::cout << "IV: " << string_to_hex(iv.data()) << std::endl; 
+}
 
 void convertToHex(std::vector<unsigned char>& data, std::vector<unsigned char> &hex_data)
 {
@@ -59,39 +81,4 @@ std::vector<unsigned char> base64_decode(const std::string& encoded_string)
     BIO_free_all(bio);
 
     return decoded_data;
-}
-
-int main(void)
-{
-    std::string publick, privatek;
-    generateRSAKeys(publick, privatek);
-    //std::cout << publick << std::endl;
-
-    std::vector<unsigned char> key(64);
-    std::vector<unsigned char> keyHex(64);
-    std::vector<unsigned char> iv(32);
-    std::vector<unsigned char> ivHex(32);
-    
-    // generate IV and AES key
-    generateAESKeyAndIV(key, iv);
-
-    // convert key and iv to hexa
-    convertToHex(key, keyHex);
-    std::cout << "AES: " << "'" << keyHex.data() << "'" << std::endl;
-
-    convertToHex(iv, ivHex);
-    std::cout << "IV: " <<  "'" << ivHex.data() << "'" << std::endl;
-
-    // Encrypt message and convert to base64 for send
-    std::string aesEncryptB64 = EncryptAESWithRSA(publick, keyHex);
-    std::cout << "AES b64:" << "'" << aesEncryptB64  << "'" << std::endl;
-    
-    // decode base64 for decrypt RSA message
-    std::vector<unsigned char> aesBinaryKey = base64_decode(aesEncryptB64);
-
-    std::string decrypt =  DecryptAESWithRSA(privatek, aesBinaryKey);
-
-    std::cout << decrypt << std::endl;
-
-    return 1;
 }
