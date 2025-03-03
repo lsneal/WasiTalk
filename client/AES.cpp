@@ -11,8 +11,11 @@ void    Client::EncryptAndSendAES(std::string public_key)
     generateAESKeyAndIV(key, iv);
     convertToHex(key, keyHex); // KEY
     convertToHex(iv, ivHex); // IV 
+    std::cout << "Key:" << keyHex.data() << std::endl;
+    std::cout << "IV:" << ivHex.data() << std::endl;
     
+    std::cout << "'" << public_key << "'" << std::endl;
     std::string aesEncryptB64 = EncryptAESWithRSA(public_key, keyHex);
 
-    std::cout << "encrypt = " << aesEncryptB64 << std::endl;
+    //std::cout << "encrypt = " << aesEncryptB64 << std::endl;
 }

@@ -91,6 +91,23 @@ bool     CheckBytesRead(int bytes_read, std::string message)
     return true;
 }
 
+std::string extractPublicKey(std::string &text) {
+    const std::string beginMarker = "-----BEGIN PUBLIC KEY-----";
+    const std::string endMarker = "-----END PUBLIC KEY-----";
+
+    size_t beginPos = text.find(beginMarker);
+    size_t endPos = text.find(endMarker, beginPos);
+
+    if (beginPos == std::string::npos || endPos == std::string::npos) {
+        throw std::runtime_error("Public key not found");
+    }
+
+    beginPos += beginMarker.length();
+    std::string publicKey = text.substr(beginPos, endPos - beginPos);
+
+    return beginMarker + "\n" + publicKey + "\n" + endMarker;
+}
+
 int    Client::StartCommunicationWithServer(std::vector<char> buffer) 
 {
     std::string         user_input;
@@ -136,10 +153,8 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
         //std::cout << "RSA: " << buffer.data() << std::endl;
         //std::string public_key(buffer.begin(), buffer.end());
         std::string public_key = buffer.data();
-        std::cout << "FDP= " << public_key << std::endl;
         std::string pbk = extractPublicKey(public_key);
-        std::cout << "'" << pbk << "'" << std::endl;
-        EncryptAndSendAES(public_key);
+        EncryptAndSendAES(pbk);
 
         // encrypt aes and iv with rsa
         // send message at server 
