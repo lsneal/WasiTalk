@@ -63,6 +63,7 @@ class   Client {
         void    EncryptMessagesWithRSA(std::string message); 
         void    EncryptAndSendAES(std::string public_key);
 
+        void testEncrypt(std::string PEM);
 
     private:
         std::string _serverIp;

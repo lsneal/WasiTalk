@@ -8,7 +8,8 @@ std::string EncryptAESWithRSA(std::string PEM, std::vector<unsigned char> messag
         BIO *BIO_new_mem_buf(const void *buf, int len);
     */
     // BUG extract key !!!!
-    BIO* bio = BIO_new_mem_buf(PEM.c_str(), -1);
+    std::cout << "'" << PEM.c_str() << "'" << std::endl;
+    BIO* bio = BIO_new_mem_buf(PEM.c_str(), PEM.length());
     std::cout << "1" << std::endl;
     if (!bio) {
         std::cerr << "Error: load PEM" << std::endl;

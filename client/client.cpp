@@ -91,7 +91,8 @@ bool     CheckBytesRead(int bytes_read, std::string message)
     return true;
 }
 
-std::string extractPublicKey(std::string &text) {
+std::string extractPublicKey(std::string &text)
+{
     const std::string beginMarker = "-----BEGIN PUBLIC KEY-----";
     const std::string endMarker = "-----END PUBLIC KEY-----";
 
@@ -105,7 +106,7 @@ std::string extractPublicKey(std::string &text) {
     beginPos += beginMarker.length();
     std::string publicKey = text.substr(beginPos, endPos - beginPos);
 
-    return beginMarker + "\n" + publicKey + "\n" + endMarker;
+    return beginMarker + publicKey + endMarker;
 }
 
 int    Client::StartCommunicationWithServer(std::vector<char> buffer) 
@@ -152,9 +153,23 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
 
         //std::cout << "RSA: " << buffer.data() << std::endl;
         //std::string public_key(buffer.begin(), buffer.end());
-        std::string public_key = buffer.data();
-        std::string pbk = extractPublicKey(public_key);
-        EncryptAndSendAES(pbk);
+        
+        //std::string public_key = buffer.data();
+        //std::string pbk = extractPublicKey(public_key);
+        std::string PEM = "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAm+tm83RVw298sxcq+7fW\nAjshuVjEGc1dGEtfSUQbYqPF5MgOusz3AWENcDgCHJabtEBiOG14nkpGfCmgxcqf\nNoDOVBAqM+h4znjk3uK6uS1wVdlKSpJh1HPvnijDlLiQ6BrMYJn9DJKN7xV4v2gO\nzEav7hTjIGvu77BUnCQ5RXRKK/ZPJ9hceaDzpti6OGUg7YQG5TlZnY/7CznxcpKA\nzcafAMjRpfhUB452rWoMqeHLjWWSfdOXjodU06eUF49dEamo/uDPsJ33Y8W3TF4Q\no1wjwcmr14R/qmrYY1D3L0J3I1ZvFrkoWbCvsF/9oEE7XjbMWy+C6SGxF1gljB/p\noTjDkXYGxCxzbJPcvUoABAkhYcmR79D/MXt3GXDUy35TIlwWw5fxz+e2Uz36W1c1\nad05vrxUTVDZcEFRvwe2Y2gVk83uD0NHR/IPc5zwkNLw/N0DDr3Dj+P20MpsHlkR\nZmnPTcIigLF/9ktcdbUaeajo25aC8c1s0JL2ej/OrEM45ip3OnbV0R6woKoKgez8\nAtg7PWjj6sgN3sob9bPYqdV9DqnybMwLrjwoNJgNqdbtBU19p/pnB6y2jB4CvvG6\ngA5G3nOhV/AgF0goGeMRgxBIqc022f92jzA64sZ+22mwXA2mSkeZETYDk0x6QIJ6\n0r8syqZaf8N+OYxo/mQiKjUCAwEAAQ==\n-----END PUBLIC KEY-----";
+        std::vector<unsigned char> key(64);
+        std::vector<unsigned char> keyHex(64);
+        std::vector<unsigned char> iv(32);
+        std::vector<unsigned char> ivHex(32);
+        key[0] = 'B';
+    
+        //generateAESKeyAndIV(key, iv);
+        //convertToHex(key, keyHex); // KEY
+        //convertToHex(iv, ivHex);
+        
+        std::string aesEncryptB64 = EncryptAESWithRSA(PEM, key);
+
+        //EncryptAndSendAES(this->_publicKey);
 
         // encrypt aes and iv with rsa
         // send message at server 
