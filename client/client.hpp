@@ -30,7 +30,11 @@ class   Client {
                     _serverIp(server_ip), \
                     _serverPort(server_port), \
                     _publicKey(publicKey), \
-                    _privateKey(privateKey) {}
+                    _privateKey(privateKey) {
+                        this->_iv = "";
+                        this->_aes = "";
+                        this->_pseudoSession = "";
+                    }
         ~Client() {
             if (this->_ctx)
                 SSL_CTX_free(this->_ctx);
@@ -70,16 +74,21 @@ class   Client {
         int         _serverPort;
         std::string _publicKey;
         std::string _privateKey;
+        std::string _iv;
+        std::string _aes;
+        std::string _pseudoSession;
         SSL_CTX*    _ctx;
         SSL*        _ssl;
         
 };
 
+// Init
+void InitOpenSSL();
+
 bool generateRSAKeys(std::string &publicKey, std::string &privateKey);
 bool CheckBytesRead(int bytes_read, std::string message);
 
 // AES
-
 std::string DecryptAESWithRSA(std::string PEM, std::vector<unsigned char> encrypted);
 std::string EncryptAESWithRSA(std::string PEM, std::vector<unsigned char> message);
 
@@ -87,6 +96,12 @@ std::vector<unsigned char>  base64_decode(const std::string& encoded_string);
 std::string                 base64_encode(std::vector<unsigned char> data);
 void                        convertToHex(std::vector<unsigned char>& data, std::vector<unsigned char> &hex_data);
 void                        generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
+
+// Extract
+std::string extractPublicKey(std::string &text);
+std::string extractPseudo(const std::string& input);
+std::string extractAndDecodeBase64(const std::string &input, const std::string &pseudo);
+
 
 
 #endif
