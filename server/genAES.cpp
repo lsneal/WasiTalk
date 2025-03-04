@@ -18,7 +18,8 @@ std::string string_to_hex(const std::string &input)
 
 void    Server::sendAESKeyForSession(SSL *ssl, SSL *ssl_session)
 {
-
+    (void)ssl;
+    (void)ssl_session;
     //std::vector<unsigned char>  key(AES_BLOCK_SIZE * 2);
     //std::vector<unsigned char>  iv(AES_BLOCK_SIZE);
 

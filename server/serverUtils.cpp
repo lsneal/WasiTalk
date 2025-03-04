@@ -125,7 +125,7 @@ void    Server::ReceiveRSAKey(SSL *ssl, int indexClient)
     std::lock_guard<std::mutex> lock(clients_mutex);  
     std::vector<char>           buffer(4096);  
     int                         bytesRead = SSL_read(ssl, buffer.data(), buffer.size());
-    
+    (void)bytesRead;
     //if (CheckBytesRead(bytesRead, buffer.data()) == false)
     //    return ;
 

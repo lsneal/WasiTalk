@@ -14,6 +14,7 @@ void    ReceivMsg(SSL* _ssl)
         {
             // Decrypt message and print
             std::lock_guard<std::mutex> lock(sendMutex);
+            //base64_decode()
             std::cout << buffer.data() << std::endl;
             OPENSSL_cleanse(buffer.data(), buffer.size());
         } 
@@ -147,7 +148,7 @@ void Client::CommunicateWithServer()
     EVP_PKEY* privateKey = loadPrivateKeyFromString(this->_privateKey);
 
     // std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, privatekey, this->_aes, this->_iv);
-    
+
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
     std::thread SendMsgThread1(SendMsg, this->_ssl);
 
