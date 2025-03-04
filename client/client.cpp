@@ -12,6 +12,7 @@ void    ReceivMsg(SSL* _ssl)
         bytes_read = SSL_read(_ssl, buffer.data(), buffer.size());
         if (bytes_read > 0) 
         {
+            // Decrypt message and print
             std::lock_guard<std::mutex> lock(sendMutex);
             std::cout << buffer.data() << std::endl;
             OPENSSL_cleanse(buffer.data(), buffer.size());
@@ -53,6 +54,7 @@ bool     CheckBytesRead(int bytes_read, std::string message)
     }
     return true;
 }
+
 
 int    Client::StartCommunicationWithServer(std::vector<char> buffer) 
 {
@@ -113,6 +115,26 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     return 1;
 }
 
+EVP_PKEY* loadPrivateKeyFromString(const std::string  &pemKey)
+{
+    BIO* bio = BIO_new_mem_buf(pemKey.data(), static_cast<int>(pemKey.size()));
+    if (!bio) {
+        std::cerr << "Error create bio" << std::endl;
+        return NULL;
+    }
+
+    // Load key
+    EVP_PKEY* rsaPrivateKey = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
+    if (!rsaPrivateKey) {
+        std::cerr << "Error loading private key" << std::endl;
+        return NULL;
+    }
+
+    BIO_free(bio);
+
+    return rsaPrivateKey;
+}
+
 void Client::CommunicateWithServer()
 {
     std::vector<char>   buffer(1024);
@@ -121,6 +143,11 @@ void Client::CommunicateWithServer()
     if (StartCommunicationWithServer(buffer) == -1)
         return ;
 
+    // Convert pem private key on RSA object for multithreading
+    EVP_PKEY* privateKey = loadPrivateKeyFromString(this->_privateKey);
+
+    // std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, privatekey, this->_aes, this->_iv);
+    
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
     std::thread SendMsgThread1(SendMsg, this->_ssl);
 
