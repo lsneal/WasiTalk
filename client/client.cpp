@@ -2,7 +2,53 @@
 
 std::mutex sendMutex;
 
-void    ReceivMsg(SSL* _ssl)
+std::string base64_stringEncode(std::string buffer)
+{
+    std::vector<unsigned char> data(buffer.begin(), buffer.end());
+
+    BIO *bio, *b64;
+    BUF_MEM *buffer_ptr;
+    
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_new(BIO_s_mem());
+
+    bio = BIO_push(b64, bio);
+
+    BIO_write(bio, data.data(), data.size());
+
+    BIO_flush(bio);
+
+    BIO_get_mem_ptr(bio, &buffer_ptr);
+
+    std::string base64_str(buffer_ptr->data, buffer_ptr->length);
+
+    BIO_free_all(bio);
+
+    return base64_str;
+}
+
+std::string base64_stringDecode(const std::string &encoded_string)
+{
+    BIO *bio, *b64;
+    int decode_len = encoded_string.size() * 3 / 4;
+    std::vector<unsigned char> decoded_data(decode_len);
+
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_new_mem_buf(encoded_string.data(), encoded_string.size());
+
+    bio = BIO_push(b64, bio);
+
+    decode_len = BIO_read(bio, decoded_data.data(), encoded_string.size());
+
+    decoded_data.resize(decode_len);
+    BIO_free_all(bio);
+    
+    std::string decoded_string(decoded_data.begin(), decoded_data.end());
+
+    return decoded_string;
+}
+
+void    ReceivMsg(SSL* _ssl, std::string pseudo)
 {
     std::vector<char>   buffer(4096);
     int                 bytes_read = 0;
@@ -14,8 +60,9 @@ void    ReceivMsg(SSL* _ssl)
         {
             // Decrypt message and print
             std::lock_guard<std::mutex> lock(sendMutex);
-            //base64_decode()
-            std::cout << buffer.data() << std::endl;
+            std::string data = extractAndDecodeBase64(buffer.data(), pseudo);
+            std::string messageDecode = base64_stringDecode(data);
+            std::cout << pseudo << ": " << messageDecode.data() << std::endl;
             OPENSSL_cleanse(buffer.data(), buffer.size());
         } 
         else
@@ -34,8 +81,9 @@ void    SendMsg(SSL* _ssl)
     {
         std::getline(std::cin, user_input);
         std::lock_guard<std::mutex> lock(sendMutex);
-        SSL_write(_ssl, user_input.c_str(), user_input.length());
-        OPENSSL_cleanse(&user_input[0], user_input.size());
+        std::string messageEncode = base64_stringEncode(user_input);
+        SSL_write(_ssl, messageEncode.c_str(), messageEncode.length());
+        OPENSSL_cleanse(&messageEncode[0], messageEncode.size());
     }
 }
 
@@ -149,7 +197,7 @@ void Client::CommunicateWithServer()
 
     // std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, privatekey, this->_aes, this->_iv);
 
-    std::thread ReceivMsgThread1(ReceivMsg, this->_ssl);
+    std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, this->_pseudoSession);
     std::thread SendMsgThread1(SendMsg, this->_ssl);
 
     ReceivMsgThread1.join();
