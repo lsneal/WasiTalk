@@ -86,19 +86,6 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
             return ;
 
         SSL *ssl_session = Server.GetSessionSSL(buffer.data());
-
-        // send rsa key at client for encrypt aes
-        // receive aes and iv
-        // send message at session client 
-
-        std::string KeyAndIV = "KEYYYYYYYYYYY";
-
-        /*std::thread sendKeyThread2(sendAESKeyToClient, ssl_session, KeyAndIV);
-        std::thread sendKeyThread1(sendAESKeyToClient, ssl, KeyAndIV);
-        sendKeyThread2.detach();
-        sendKeyThread1.detach();*/
-
-        /* ############################# */
         std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
         std::thread relayThread1(relayMessage, ssl, ssl_session, \

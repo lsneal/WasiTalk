@@ -57,9 +57,6 @@ class   Server {
 
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
 
-        /*   AES file   */
-        void        sendAESKeyForSession(SSL *ssl, SSL *ssl_session);
-
 
     private:
         std::vector<Info>   client;
@@ -77,6 +74,5 @@ bool    CheckBytesRead(int bytes_read, std::string message) ;
 void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
 std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);
 std::string string_to_hex(const std::string &input);
-
 
 #endif
