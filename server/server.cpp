@@ -79,23 +79,35 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
     if (Server.GetClientSize() > 1) 
     {
-        Server.SendClientList(std::string(buffer.data()), ssl);
+        bool session = false;
+
+        while (!session)
+        {
+
+            Server.SendClientList(std::string(buffer.data()), ssl);
     
-        buffer.assign(buffer.size(), 0);
-        if (readFromSSL(ssl, buffer) == false)
-            return ;
+            buffer.assign(buffer.size(), 0);
 
-        SSL *ssl_session = Server.GetSessionSSL(buffer.data());
-        std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
+            if (readFromSSL(ssl, buffer) == false)
+                return ;
 
-        std::thread relayThread1(relayMessage, ssl, ssl_session, \
-                                        Server.GetUserWithSSL(ssl), Server.GetUserWithSSL(ssl_session));
-        std::thread relayThread2(relayMessage, ssl_session, ssl, \
-                                        Server.GetUserWithSSL(ssl_session), Server.GetUserWithSSL(ssl));
+            SSL *ssl_session = Server.GetSessionSSL(buffer.data());
+            if (ssl_session != nullptr)
+            {
+                session = true;
+                std::cout << "Session create with --> " << Server.GetUserWithSSL(ssl) << " and " << Server.GetUserWithSSL(ssl_session) << std::endl;
 
-        relayThread1.detach();
-        relayThread2.detach();
-
+                std::thread relayThread1(relayMessage, ssl, ssl_session, \
+                                            Server.GetUserWithSSL(ssl), Server.GetUserWithSSL(ssl_session));
+                std::thread relayThread2(relayMessage, ssl_session, ssl, \
+                                            Server.GetUserWithSSL(ssl_session), Server.GetUserWithSSL(ssl));
+                
+                relayThread1.detach();
+                relayThread2.detach();
+            }
+            else 
+                std::cout << "User not found" << std::endl;
+        }
     }
     else 
     {

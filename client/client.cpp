@@ -136,7 +136,15 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     std::string serv = "Solo on server";
     if (serv.compare(buffer.data()) != 0) 
     {
-        std::cout << "" << std::endl;
+        // while read client list 
+        /*buffer.assign(buffer.size(), 0);
+        while (buffer.data())
+        {
+            bytes_read = SSL_read(this->_ssl, buffer.data(), buffer.size());
+            std::cout << buffer.data();
+        }*/
+
+        std::cout << "Enter pseudo for open session: " << std::endl;
         std::getline(std::cin, user_input);
         this->_pseudoSession = user_input;
         SSL_write(this->_ssl, user_input.c_str(), user_input.length());

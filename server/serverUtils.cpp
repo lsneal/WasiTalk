@@ -81,7 +81,7 @@ SSL    *Server::GetSessionSSL(std::string pseudo)
         if (this->client[i].getPseudo() == pseudo)
             return this->client[i].getSSL();
     }
-    return NULL; 
+    return nullptr; 
 }
 
 void    Server::RemoveClient(std::string pseudo) 
