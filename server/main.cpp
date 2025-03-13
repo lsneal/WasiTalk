@@ -13,17 +13,17 @@ int createServerSocket(int port)
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        std::cerr << "Error: bind socket" << std::endl;
+        ERROR_MSG("bind socket");
         close(serverSocket);
         return -1;
     }
 
     if (listen(serverSocket, 5) < 0) {
-        std::cerr << "Error: listen socket" << std::endl;
+        ERROR_MSG("listen socket");
         close(serverSocket);
         return -1;
     }
-    std::cout << "Server listen on port: " << port << "..." << std::endl;
+    SERVER_LISTEN(port);
 
     return serverSocket;
 }
@@ -45,7 +45,7 @@ void    Server::StartServer(int serverSocket)
         int activity = select(max_fd + 1, &copy_fds, nullptr, nullptr, nullptr);
 
         if (activity < 0) {
-            std::cerr << "Error: select failed" << std::endl;
+            ERROR_MSG("select failed");
             break ;
         }
 
@@ -54,7 +54,7 @@ void    Server::StartServer(int serverSocket)
         {
             int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
             if (clientSocket < 0) {
-                std::cerr << "Error: accept failed" << std::endl;
+                ERROR_MSG("accept failed");
                 continue ;
             }
 
@@ -63,44 +63,41 @@ void    Server::StartServer(int serverSocket)
             SSL_set_fd(ssl, clientSocket);
             if (SSL_accept(ssl) == -1) 
             {
-                std::cerr << "Error SSL accept" << std::endl;
+                ERROR_MSG("SSL accept");
                 close(clientSocket);
                 SSL_free(ssl);
                 continue ;
             }
 
-            // PSEUDO CLIENT and check if exist
-            char buf[1024];
-
+            std::vector<char> buf(1024);
             while (1)
             {
-                std::string yupseudo = "Enter your pseudo: ";
-                SSL_write(ssl, yupseudo.c_str(), yupseudo.length());
-                int bytesRead = SSL_read(ssl, buf, sizeof(buf) - 1);
+                SSL_write(ssl, INPUT_PSEUDO, strlen(INPUT_PSEUDO));
+                int bytesRead = SSL_read(ssl, buf.data(), buf.size() - 1);
                 
-                if (PseudoIsOkey(buf) == true) {
+                if (PseudoIsOkey(buf.data()) == true) {
+                    buf[bytesRead - 1] = '\0';
                     break ;
                 }
-                std::string error = "Pseudo exist";
-                SSL_write(ssl, error.c_str(), error.length());
+                SSL_write(ssl, PSEUDO_USED, strlen(PSEUDO_USED));
             }
-
             
             // add fd new client
             FD_SET(clientSocket, &read_fds);
             max_fd = std::max(max_fd, clientSocket);
-            this->client.push_back(Info(clientSocket, buf, ssl));
+            this->client.push_back(Info(clientSocket, buf.data(), ssl));
 
-            std::cout << "New client connected: " << inet_ntoa(clientAddress.sin_addr) << " with socket: " << clientSocket << std::endl;
+            NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
+            ManageClientConnected(read_fds, copy_fds, clientSocket);
+        
         }
 
         // client connected
-        ManageClientConnected(read_fds, copy_fds);
 
     }
 }
 
-void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds) 
+void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, int clientSocket) 
 {
     for (int i = 0; i < GetClientSize(); i++) 
     {

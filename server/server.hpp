@@ -22,6 +22,12 @@
 #include <iomanip>
 #include <map>
 
+#define ERROR_MSG(msg) std::cerr << "Error: " << msg << std::endl;
+#define SERVER_LISTEN(port) std::cout << "Server listen on port: " << port << std::endl;
+#define NEW_CLIENT(address, socket) std::cout << "New client connected: " << address << "with -> " << socket << std::endl;
+
+#define INPUT_PSEUDO "Enter your pseudo: "
+#define PSEUDO_USED "Pseudo exist"
 #define CERT_FILE "server_cert.pem"
 #define KEY_SSL "private_key.pem"
 
@@ -61,7 +67,7 @@ class   Server {
 
         // V2 
         void        StartServer(int serverSocket);
-        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds); 
+        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, int clientSocket); 
 
     private:
         std::vector<Info>   client;
