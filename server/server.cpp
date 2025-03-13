@@ -115,20 +115,3 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         SSL_write(ssl, message.c_str(), strlen(message.c_str()));
     }
 }
-
-bool     CheckBytesRead(int bytes_read, std::string message) 
-{
-    if (bytes_read > 0)
-        std::cout << message << std::endl;
-    else if (bytes_read == 0) 
-    {
-        std::cerr << "Connection close" << std::endl;
-        return false;
-    }
-    else
-    {
-        std::cerr << "Error read messages" << std::endl;
-        return false;
-    }
-    return true;
-}

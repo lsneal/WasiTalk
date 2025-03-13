@@ -17,7 +17,7 @@ int     Server::LoadCertAndPrivateKey()
     if (SSL_CTX_use_certificate_file(this->_ctx, CERT_FILE, SSL_FILETYPE_PEM) <= 0 || 
         SSL_CTX_use_PrivateKey_file(this->_ctx, KEY_SSL, SSL_FILETYPE_PEM) <= 0) 
     {
-        std::cerr << "Error load cert or private key" << std::endl;
+        ERROR_MSG("LOAD CERT OR PRIVATE KEY")
         return -1;
     }
     return 1;

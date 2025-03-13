@@ -9,44 +9,44 @@ std::string convertToHex(std::vector<unsigned char> data)
     return ss.str();
 }
 
-std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message) 
+/*std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message) 
 {
 
-    /*
+    
         Load PublicKey with PEM format
         BIO *BIO_new_mem_buf(const void *buf, int len);
-    */
+    
     BIO* bio = BIO_new_mem_buf(PEM.c_str(), -1);
     if (!bio) {
         std::cerr << "Error: load PEM" << std::endl;
         return NULL;
     }
 
-    /*
+    
         Read PublicKey with object bio
         EVP_PKEY *PEM_read_bio_PUBKEY(BIO *bp, EVP_PKEY **x,
                                        pem_password_cb *cb, void *u);
-    */
+    
     EVP_PKEY* public_key = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
     if (!public_key) {
         std::cerr << "Error: read PEM" << std::endl;
         return NULL;
     }
 
-    /*
+    
         Create context for cypher
         EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e);
-    */
+    
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(public_key, NULL);
     if (!ctx) {
         std::cerr << "Error: context create" << std::endl;
         return NULL;
     }
 
-    /*
+    
         Init context for cypher with OAEP (Optimal asymmetric encryption padding)
         int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *ctx);
-    */
+    
     if (EVP_PKEY_encrypt_init(ctx) <= 0) {
         std::cerr << "Error: init cypher" << std::endl;
         return NULL;
@@ -56,10 +56,6 @@ std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> m
         std::cerr << "Error: padding configuration" << std::endl;
         return NULL;
     }
-
-    // convert binary to hexa for encrypt 
-    std::string data = convertToHex(message);
-    std::cout << "data = " << data << std::endl;
 
     size_t encrypted_size;
     if (EVP_PKEY_encrypt(ctx, NULL, &encrypted_size, \
@@ -76,15 +72,13 @@ std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> m
         std::cerr << "Error: encrypt message" << std::endl;
         return NULL;
     }
-    std::string hex = string_to_hex((const char *)encrypted.data());
-    std::cout << "'" << hex << "'" << std::endl;
 
     EVP_PKEY_CTX_free(ctx);
     EVP_PKEY_free(public_key);
     BIO_free(bio);
 
     return hex;
-}
+}*/
 
 std::string string_to_hex(const std::string &input)
 {

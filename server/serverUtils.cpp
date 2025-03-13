@@ -146,3 +146,20 @@ std::string Server::GetPEMwithSSL(SSL *ssl)
     }
     return NULL;
 }
+
+bool     CheckBytesRead(int bytes_read, std::string message) 
+{
+    if (bytes_read > 0)
+        std::cout << message << std::endl;
+    else if (bytes_read == 0) 
+    {
+        ERROR_MSG("CONNECTION CLOSE");
+        return false;
+    }
+    else
+    {
+        ERROR_MSG("ERROR READ MESSAGE");
+        return false;
+    }
+    return true;
+}

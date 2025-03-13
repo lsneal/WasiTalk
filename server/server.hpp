@@ -22,14 +22,15 @@
 #include <iomanip>
 #include <map>
 
+#define CERT_FILE "server_cert.pem"
+#define KEY_SSL "private_key.pem"
+
 #define ERROR_MSG(msg) std::cerr << "Error: " << msg << std::endl;
 #define SERVER_LISTEN(port) std::cout << "Server listen on port: " << port << std::endl;
 #define NEW_CLIENT(address, socket) std::cout << "New client connected: " << address << "with -> " << socket << std::endl;
 #define CLIENT_DISCONNECTED(clientSocket) std::cout << "Client " << clientSocket << " disconnected" << std::endl;
 #define INPUT_PSEUDO "Enter your pseudo: "
 #define PSEUDO_USED "Pseudo exist"
-#define CERT_FILE "server_cert.pem"
-#define KEY_SSL "private_key.pem"
 
 #define CREATE_COMMAND "create"
 #define JOIN_COMMAND "join"
@@ -100,8 +101,8 @@ void    WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl);
 void    InitOpenSSL();
 
 bool    CheckBytesRead(int bytes_read, std::string message) ;
-void    generateAESKeyAndIV(std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
-std::string EncryptMessagesWithRSA(std::string PEM, std::vector<unsigned char> message);
-std::string string_to_hex(const std::string &input);
+
+// MENU
+Command GetCommand(std::string command);
 
 #endif
