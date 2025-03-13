@@ -25,11 +25,26 @@
 #define ERROR_MSG(msg) std::cerr << "Error: " << msg << std::endl;
 #define SERVER_LISTEN(port) std::cout << "Server listen on port: " << port << std::endl;
 #define NEW_CLIENT(address, socket) std::cout << "New client connected: " << address << "with -> " << socket << std::endl;
-
+#define CLIENT_DISCONNECTED(clientSocket) std::cout << "Client " << clientSocket << " disconnected" << std::endl;
 #define INPUT_PSEUDO "Enter your pseudo: "
 #define PSEUDO_USED "Pseudo exist"
 #define CERT_FILE "server_cert.pem"
 #define KEY_SSL "private_key.pem"
+
+#define CREATE_COMMAND "create"
+#define JOIN_COMMAND "join"
+#define LIST_COMMAND "list"
+#define LEAVE_COMMAND "leave"
+#define NEW_RSA_COMMAND "newrsa"
+
+enum Command {
+    CREATE = 1,
+    JOIN = 2,
+    LIST = 3,
+    LEAVE = 4,
+    NEW_RSA = 5,
+    INVALID
+};
 
 class   Server {
     
@@ -67,7 +82,9 @@ class   Server {
 
         // V2 
         void        StartServer(int serverSocket);
-        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, int clientSocket); 
+        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *ssl); 
+
+        void        Menu(Command cmd);
 
     private:
         std::vector<Info>   client;
@@ -75,6 +92,7 @@ class   Server {
         int                 _port;
         SSL_CTX             *_ctx; // for certificat SSL/TLS
         SSL                 *_ssl;
+        SSL                 *_tempSSL;
 
 };
 

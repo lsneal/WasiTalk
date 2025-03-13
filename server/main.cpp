@@ -45,7 +45,7 @@ void    Server::StartServer(int serverSocket)
         int activity = select(max_fd + 1, &copy_fds, nullptr, nullptr, nullptr);
 
         if (activity < 0) {
-            ERROR_MSG("select failed");
+            ERROR_MSG("SELECT FAILED");
             break ;
         }
 
@@ -54,16 +54,17 @@ void    Server::StartServer(int serverSocket)
         {
             int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
             if (clientSocket < 0) {
-                ERROR_MSG("accept failed");
+                ERROR_MSG("ACCEPT FAILED");
                 continue ;
             }
 
             // config ssl new client
-            SSL* ssl = SSL_new(this->_ctx);
+            SSL *ssl = SSL_new(this->_ctx);
+            this->_tempSSL = ssl;
             SSL_set_fd(ssl, clientSocket);
             if (SSL_accept(ssl) == -1) 
             {
-                ERROR_MSG("SSL accept");
+                ERROR_MSG("SSL ACCEPT");
                 close(clientSocket);
                 SSL_free(ssl);
                 continue ;
@@ -88,16 +89,51 @@ void    Server::StartServer(int serverSocket)
             this->client.push_back(Info(clientSocket, buf.data(), ssl));
 
             NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
-            ManageClientConnected(read_fds, copy_fds, clientSocket);
         
         }
+        ManageClientConnected(read_fds, copy_fds, this->_tempSSL);
 
         // client connected
 
     }
 }
 
-void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, int clientSocket) 
+Command GetCommand(std::string command) 
+{
+    if (command == CREATE_COMMAND) return CREATE;
+    if (command == JOIN_COMMAND) return JOIN;
+    if (command == LIST_COMMAND) return LIST;
+    if (command == LEAVE_COMMAND) return LEAVE;
+    if (command == NEW_RSA_COMMAND) return NEW_RSA;
+    return INVALID;
+}
+
+void    Server::Menu(Command cmd) 
+{
+    switch (cmd) {
+        case CREATE:
+            std::cout << "Creating a new chat room..." << std::endl;
+            break;
+        case JOIN:
+            std::cout << "Joining a chat room..." << std::endl;
+            break;
+        case LIST:
+            std::cout << "Listing available chat rooms..." << std::endl;
+            break;
+        case LEAVE:
+            std::cout << "Leaving the chat room..." << std::endl;
+            break;
+        case NEW_RSA:
+            std::cout << "Generating a new RSA key pair..." << std::endl;
+            break;
+        case INVALID:
+        default:
+            std::cerr << "Invalid command received!" << std::endl;
+            break;
+    }
+}
+
+void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *ssl) 
 {
     for (int i = 0; i < GetClientSize(); i++) 
     {
@@ -105,28 +141,44 @@ void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, int cl
         if (FD_ISSET(clientSocket, &copy_fds)) 
         {
             char buffer[1024];
-            int bytesRead = SSL_read(GetSessionSSL("pseudo"), buffer, sizeof(buffer) - 1);
+            int bytesRead = SSL_read(ssl, buffer, sizeof(buffer) - 1);
             if (bytesRead <= 0)
             {
                 // deconnection client
                 if (bytesRead == 0) {
-                    std::cout << "Client " << clientSocket << " disconnected." << std::endl;
-                } else {
-                    std::cerr << "Error reading from client " << clientSocket << std::endl;
-                }
+                    CLIENT_DISCONNECTED(clientSocket);
+                } 
+                else
+                    ERROR_MSG("READING FROM CLIENT");
 
                 // close connnection
-                SSL_shutdown(GetSessionSSL("pseudo"));
-                SSL_free(GetSessionSSL("pseudo"));
+                SSL_shutdown(ssl);
+                SSL_free(ssl);
                 close(clientSocket);
                 FD_CLR(clientSocket, &read_fds);
             } 
             else
             {
-                buffer[bytesRead] = '\0';
+                buffer[bytesRead - 1] = '\0';
                 std::cout << "Message from client " << clientSocket << ": " << buffer << std::endl;
                 
 
+                Command cmd = GetCommand(std::string(buffer));
+
+                Menu(cmd);
+                /*
+                
+                MENU:
+
+                - create <name> --> create chat
+                - join <name> --> join chat 
+
+                - list --> list chat open
+                - leave --> leave chat 
+                
+                - newrsa --> gen new key pair
+
+                */
 
                 // Exemple
                 /*for (const auto& pair : clientSSLs) {
