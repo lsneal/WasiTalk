@@ -63,7 +63,6 @@ class   Server {
         void        StartServer(int serverSocket);
         void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds); 
 
-
     private:
         std::vector<Info>   client;
         int                 _serverFd;
