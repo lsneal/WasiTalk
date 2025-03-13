@@ -90,7 +90,7 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
 
             if (readFromSSL(ssl, buffer) == false)
                 return ;
-
+            
             SSL *ssl_session = Server.GetSessionSSL(buffer.data());
             if (ssl_session != nullptr)
             {

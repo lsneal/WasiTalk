@@ -20,6 +20,7 @@
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 #include <iomanip>
+#include <map>
 
 #define CERT_FILE "server_cert.pem"
 #define KEY_SSL "private_key.pem"
@@ -56,6 +57,11 @@ class   Server {
         std::string GetPEMwithSSL(SSL *ssl);
 
         void        ReceiveRSAKey(SSL *ssl, int indexClient);
+
+
+        // V2 
+        void        StartServer(int serverSocket);
+        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds); 
 
 
     private:

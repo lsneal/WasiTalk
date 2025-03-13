@@ -27,13 +27,15 @@ int createServerSocket(int port)
 
     return serverSocket;
 }
-
+/*
 void    StartServer(int serverSocket, Server Server)  
 {
+    sockaddr_in clientAddress;
+    socklen_t   clientAddressLen = sizeof(clientAddress);
+    fd_set      read_fds;
+
     while (true) 
     {
-        sockaddr_in clientAddress;
-        socklen_t clientAddressLen = sizeof(clientAddress);
 
         int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
         if (clientSocket < 0) {
@@ -53,15 +55,110 @@ void    StartServer(int serverSocket, Server Server)
         std::cout << "Socket: " << clientSocket << std::endl;
         std::cout << "Client connected with IP: " << inet_ntoa(clientAddress.sin_addr) << std::endl;
 
-        std::thread clientThread(WaitingClientConnection, std::ref(Server), clientSocket, ssl);
-        clientThread.detach();
+        //std::thread clientThread(WaitingClientConnection, std::ref(Server), clientSocket, ssl);
+        //clientThread.detach();
         
         //SSL_shutdown(ssl);
         //SSL_free(ssl);
         //close(clientSocket);
     }
+}*/
+void    ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, std::map<int, SSL*> &clientSSLs, std::vector<int> &clientSockets) ;
+
+void    Server::StartServer(int serverSocket)
+{
+    sockaddr_in clientAddress;
+    socklen_t clientAddressLen = sizeof(clientAddress);
+    fd_set read_fds;
+    
+    // init fd
+    FD_ZERO(&read_fds);
+    FD_SET(serverSocket, &read_fds);
+    int max_fd = serverSocket;
+
+    while (true) 
+    {
+        fd_set copy_fds = read_fds;
+        int activity = select(max_fd + 1, &copy_fds, nullptr, nullptr, nullptr);
+
+        if (activity < 0) {
+            std::cerr << "Error: select failed" << std::endl;
+            break;
+        }
+
+        // if new client
+        if (FD_ISSET(serverSocket, &copy_fds)) 
+        {
+            int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
+            if (clientSocket < 0) {
+                std::cerr << "Error: accept failed" << std::endl;
+                continue;
+            }
+
+            // config ssl new client
+            SSL* ssl = SSL_new(this->_ctx);
+            SSL_set_fd(ssl, clientSocket);
+            if (SSL_accept(ssl) == -1) 
+            {
+                std::cerr << "Error SSL accept" << std::endl;
+                close(clientSocket);
+                SSL_free(ssl);
+                continue;
+            }
+
+            // add fd new client
+            FD_SET(clientSocket, &read_fds);
+            max_fd = std::max(max_fd, clientSocket);
+            this->client.push_back(Info(clientSocket, "pseudo", ssl));
+
+            std::cout << "New client connected: " << inet_ntoa(clientAddress.sin_addr) << " with socket: " << clientSocket << std::endl;
+        }
+
+        // client connected
+        ManageClientConnected(read_fds, copy_fds);
+
+    }
 }
 
+void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds) 
+{
+    for (int i = 0; i < GetClientSize(); i++) 
+    {
+        int clientSocket = this->client[i].getFd();
+        if (FD_ISSET(clientSocket, &copy_fds)) 
+        {
+            char buffer[1024];
+            int bytesRead = SSL_read(GetSessionSSL("pseudo"), buffer, sizeof(buffer) - 1);
+            if (bytesRead <= 0)
+            {
+                // deconnection client
+                if (bytesRead == 0) {
+                    std::cout << "Client " << clientSocket << " disconnected." << std::endl;
+                } else {
+                    std::cerr << "Error reading from client " << clientSocket << std::endl;
+                }
+
+                // close connnection
+                SSL_shutdown(GetSessionSSL("pseudo"));
+                SSL_free(GetSessionSSL("pseudo"));
+                close(clientSocket);
+                FD_CLR(clientSocket, &read_fds);
+            } 
+            else
+            {
+                buffer[bytesRead] = '\0';
+                std::cout << "Message from client " << clientSocket << ": " << buffer << std::endl;
+
+                // Exemple
+                /*for (const auto& pair : clientSSLs) {
+                    if (pair.first != clientSocket) {
+                        SSL_write(pair.second, buffer, strlen(buffer));
+                    }
+                }*/
+            }
+        }
+    }
+}
 
 int main(int argc, char **argv) 
 {
@@ -86,8 +183,9 @@ int main(int argc, char **argv)
     /*  INIT TCP SOCKET */
     int serverSocket = createServerSocket(port);
 
-    std::thread StartServerThread(StartServer, serverSocket, Server);
-    StartServerThread.join();
+    Server.StartServer(serverSocket);
+    //std::thread StartServerThread(StartServer, serverSocket, Server);
+    //StartServerThread.join();
 
 
     close(serverSocket);
