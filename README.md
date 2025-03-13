@@ -9,6 +9,11 @@ Key features of the project include:
 
 ## Current Features
 
+Test with openssl
+```
+openssl s_client -connect <hostname>:<port> -CAfile <chemin_du_certificat_CA>
+```
+
 - **Server:**
   - Handles multiple client connections simultaneously by creating a new thread for each client.
   - Utilizes SSL/TLS to secure each connection and ensure the confidentiality of the exchanged data.
