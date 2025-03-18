@@ -13,13 +13,13 @@ int createServerSocket(int port)
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        ERROR_MSG("bind socket");
+        ERROR_MSG("bind socket")
         close(serverSocket);
         return -1;
     }
 
     if (listen(serverSocket, 5) < 0) {
-        ERROR_MSG("listen socket");
+        ERROR_MSG("listen socket")
         close(serverSocket);
         return -1;
     }
@@ -31,7 +31,7 @@ int createServerSocket(int port)
 int main(int argc, char **argv) 
 {
     if (argc != 2) {
-        ERROR_MSG("ERROR: ./server <port>");
+        ERROR_MSG("ERROR: ./server <port>")
         return 1;
     }
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     InitOpenSSL();
     const SSL_METHOD    *method = SSLv23_server_method();
     if (method == nullptr) {
-        ERROR_MSG("UNABLE TO CREATE SSL METHOD");
+        ERROR_MSG("UNABLE TO CREATE SSL METHOD")
         return 1;
     }
     Server.SetMethodSSL(method);

@@ -10,17 +10,43 @@ Command GetCommand(std::string command)
     return INVALID;
 }
 
+void    Server::CreateChatRoom(SSL *ssl) 
+{
+    std::vector<char> buf(1024);
 
-void    Server::Menu(Command cmd) 
+    SSL_write(ssl, INPUT_CHATROOM, strlen(INPUT_CHATROOM));
+    int bytesRead = SSL_read(ssl, buf.data(), buf.size() - 1);
+    
+    // CHECK BYTE READ <= 0
+    buf[bytesRead - 1] = '\0';
+    
+    // CHECK IF CHANNEL IS OKEY
+    this->_chatroom.push_back(buf.data());
+
+    ListChatRoom(ssl);
+}
+
+void    Server::ListChatRoom(SSL *ssl) 
+{
+
+    for (int i = 0; i < (int)this->_chatroom.size(); i++) {
+        SSL_write(ssl, this->_chatroom[i].c_str(), this->_chatroom[i].size());
+    }
+
+}
+
+void    Server::Menu(Command cmd, SSL *ssl) 
 {
     switch (cmd) {
         case CREATE:
+            CreateChatRoom(ssl);
             std::cout << "Creating a new chat room..." << std::endl;
             break;
         case JOIN:
             std::cout << "Joining a chat room..." << std::endl;
             break;
         case LIST:
+             ListChatRoom(ssl);
             std::cout << "Listing available chat rooms..." << std::endl;
             break;
         case LEAVE:

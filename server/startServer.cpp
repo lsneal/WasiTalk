@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-
 void    Server::StartServer(int serverSocket)
 {
     sockaddr_in clientAddress;
@@ -49,8 +48,9 @@ void    Server::StartServer(int serverSocket)
                 SSL_write(ssl, INPUT_PSEUDO, strlen(INPUT_PSEUDO));
                 int bytesRead = SSL_read(ssl, buf.data(), buf.size() - 1);
                 
+                buf[bytesRead - 1] = '\0';                
                 if (PseudoIsOkey(buf.data()) == true) {
-                    buf[bytesRead - 1] = '\0';
+                    std::cout << "Pseudo: " << buf.data() << std::endl;
                     break ;
                 }
                 SSL_write(ssl, PSEUDO_USED, strlen(PSEUDO_USED));
@@ -112,7 +112,7 @@ void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *s
                 std::cout << "Message from client " << clientSocket << ": " << buffer.data() << std::endl;
             
                 Command cmd = GetCommand(std::string(buffer.data()));
-                Menu(cmd);
+                Menu(cmd, ssl);
             }
         }
     }

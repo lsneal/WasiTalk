@@ -30,6 +30,7 @@
 #define NEW_CLIENT(address, socket) std::cout << "New client connected: " << address << "with -> " << socket << std::endl;
 #define CLIENT_DISCONNECTED(clientSocket) std::cout << "Client " << clientSocket << " disconnected" << std::endl;
 #define INPUT_PSEUDO "Enter your pseudo: "
+#define INPUT_CHATROOM "Enter chatroom name: "
 #define PSEUDO_USED "Pseudo exist"
 
 #define CREATE_COMMAND "create"
@@ -85,8 +86,10 @@ class   Server {
         void        StartServer(int serverSocket);
         void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *ssl); 
 
-        void        Menu(Command cmd);
-
+        void        Menu(Command cmd, SSL *ssl);
+            
+            void    CreateChatRoom(SSL *ssl);
+            void    ListChatRoom(SSL *ssl);
     private:
         std::vector<Info>   client;
         int                 _serverFd;
@@ -94,6 +97,7 @@ class   Server {
         SSL_CTX             *_ctx; // for certificat SSL/TLS
         SSL                 *_ssl;
         SSL                 *_tempSSL;
+        std::vector<std::string>   _chatroom;
 
 };
 
