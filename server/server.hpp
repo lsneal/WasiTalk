@@ -76,7 +76,6 @@ class   Server {
         int         GetClientSize() { return this->client.size();}
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
         SSL         *GetSessionSSL(std::string pseudo);
-        SSL         *GetSessionSSLWithReadFD(fd_set read_fds);
         std::string GetUserWithSSL(SSL *ssl);
         std::string GetClientWithFd(int fd);
         std::string GetPEMwithSSL(SSL *ssl);
@@ -86,7 +85,7 @@ class   Server {
 
         // V2 
         void        StartServer(int serverSocket);
-        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *ssl); 
+        void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds); 
 
         void        Menu(Command cmd, SSL *ssl);
             
@@ -101,6 +100,7 @@ class   Server {
         SSL_CTX             *_ctx; // for certificat SSL/TLS
         SSL                 *_ssl;
         SSL                 *_tempSSL;
+        int                 _index;
         std::vector<Room>   _chatroom;
 
 };

@@ -64,7 +64,7 @@ void    Server::StartServer(int serverSocket)
         
         }
         // client connected
-        ManageClientConnected(read_fds, copy_fds, GetSessionSSLWithReadFD(read_fds));
+        ManageClientConnected(read_fds, copy_fds);
     }
 }
 
@@ -79,10 +79,11 @@ void    Server::StartServer(int serverSocket)
 
 */
 
-void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds, SSL *ssl) 
+void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds) 
 {
     for (int i = 0; i < GetClientSize(); i++) 
     {
+        SSL *ssl = this->client[i].getSSL();
         int clientSocket = this->client[i].getFd();
         if (FD_ISSET(clientSocket, &copy_fds)) 
         {
