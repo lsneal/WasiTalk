@@ -27,11 +27,13 @@ class Info {
         std::string getPemKey() { return _pemKey; }
         int         getFd() { return _fd; }
         SSL         *getSSL() { return _sslSession; }
+        fd_set      getReadFd() { return _read_fds; }
     private:
         int         _fd;
         std::string _pseudo;
         std::string _pemKey;
         SSL         *_sslSession;
+        fd_set      _read_fds;
 
 };
 

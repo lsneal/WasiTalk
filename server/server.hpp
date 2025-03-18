@@ -76,6 +76,7 @@ class   Server {
         int         GetClientSize() { return this->client.size();}
         SSL_CTX     *GetContextSSL() { return this->_ctx; }
         SSL         *GetSessionSSL(std::string pseudo);
+        SSL         *GetSessionSSLWithReadFD(fd_set read_fds);
         std::string GetUserWithSSL(SSL *ssl);
         std::string GetClientWithFd(int fd);
         std::string GetPEMwithSSL(SSL *ssl);

@@ -32,7 +32,6 @@ void    Server::StartServer(int serverSocket)
 
             // config ssl new client
             SSL *ssl = SSL_new(this->_ctx);
-            this->_tempSSL = ssl;
             SSL_set_fd(ssl, clientSocket);
             if (SSL_accept(ssl) == -1) 
             {
@@ -64,10 +63,8 @@ void    Server::StartServer(int serverSocket)
             NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
         
         }
-        ManageClientConnected(read_fds, copy_fds, this->_tempSSL);
-
         // client connected
-
+        ManageClientConnected(read_fds, copy_fds, GetSessionSSLWithReadFD(read_fds));
     }
 }
 

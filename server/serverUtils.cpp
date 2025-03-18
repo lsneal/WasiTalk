@@ -84,6 +84,17 @@ SSL    *Server::GetSessionSSL(std::string pseudo)
     return nullptr; 
 }
 
+SSL    *Server::GetSessionSSLWithReadFD(fd_set read_fds) 
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    for (int i = 0; i < (int)this->client.size(); i++) 
+    {
+        if (this->client[i].getReadFd() == read_fds)
+            return this->client[i].getSSL();
+    }
+    return nullptr; 
+}
+
 void    Server::RemoveClient(std::string pseudo) 
 {
     std::lock_guard<std::mutex> lock(clients_mutex);    
