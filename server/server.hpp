@@ -1,7 +1,8 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include "info.hpp"
+#include "room.hpp"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rsa.h>
@@ -90,6 +91,8 @@ class   Server {
             
             void    CreateChatRoom(SSL *ssl);
             void    ListChatRoom(SSL *ssl);
+            void    JoinChatRoom(SSL *ssl);
+
     private:
         std::vector<Info>   client;
         int                 _serverFd;
@@ -97,7 +100,7 @@ class   Server {
         SSL_CTX             *_ctx; // for certificat SSL/TLS
         SSL                 *_ssl;
         SSL                 *_tempSSL;
-        std::vector<std::string>   _chatroom;
+        std::vector<Room>   _chatroom;
 
 };
 

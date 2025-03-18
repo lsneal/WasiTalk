@@ -12,26 +12,27 @@ Command GetCommand(std::string command)
 
 void    Server::CreateChatRoom(SSL *ssl) 
 {
-    std::vector<char> buf(1024);
+    std::vector<char> room_name(1024);
 
     SSL_write(ssl, INPUT_CHATROOM, strlen(INPUT_CHATROOM));
-    int bytesRead = SSL_read(ssl, buf.data(), buf.size() - 1);
+    int bytesRead = SSL_read(ssl, room_name.data(), room_name.size() - 1);
     
     // CHECK BYTE READ <= 0
-    buf[bytesRead - 1] = '\0';
+    room_name[bytesRead - 1] = '\0';
     
     // CHECK IF CHANNEL IS OKEY
-    this->_chatroom.push_back(buf.data());
-
-    ListChatRoom(ssl);
+    this->_chatroom.push_back(Room(room_name.data(), GetUserWithSSL(ssl)));
 }
 
 void    Server::ListChatRoom(SSL *ssl) 
 {
-
     for (int i = 0; i < (int)this->_chatroom.size(); i++) {
-        SSL_write(ssl, this->_chatroom[i].c_str(), this->_chatroom[i].size());
+        SSL_write(ssl, this->_chatroom[i].GetName().c_str(), this->_chatroom[i].GetName().size());
     }
+}
+
+void    Server::JoinChatRoom(SSL *ssl) 
+{
 
 }
 
@@ -46,7 +47,7 @@ void    Server::Menu(Command cmd, SSL *ssl)
             std::cout << "Joining a chat room..." << std::endl;
             break;
         case LIST:
-             ListChatRoom(ssl);
+            ListChatRoom(ssl);
             std::cout << "Listing available chat rooms..." << std::endl;
             break;
         case LEAVE:
