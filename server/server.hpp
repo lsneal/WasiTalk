@@ -39,6 +39,7 @@
 #define LIST_COMMAND "list"
 #define LEAVE_COMMAND "leave"
 #define NEW_RSA_COMMAND "newrsa"
+#define SEND_MSG "send"
 
 enum Command {
     CREATE = 1,
@@ -46,6 +47,7 @@ enum Command {
     LIST = 3,
     LEAVE = 4,
     NEW_RSA = 5,
+    SEND = 6,
     INVALID
 };
 
@@ -92,6 +94,7 @@ class   Server {
             void    CreateChatRoom(SSL *ssl);
             void    ListChatRoom(SSL *ssl);
             void    JoinChatRoom(SSL *ssl);
+            void    SendMessage(SSL *ssl);
 
     private:
         std::vector<Info>   client;

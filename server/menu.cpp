@@ -7,6 +7,7 @@ Command GetCommand(std::string command)
     if (command == LIST_COMMAND) return LIST;
     if (command == LEAVE_COMMAND) return LEAVE;
     if (command == NEW_RSA_COMMAND) return NEW_RSA;
+    if (command == SEND_MSG) return SEND;
     return INVALID;
 }
 
@@ -47,6 +48,37 @@ void    Server::JoinChatRoom(SSL *ssl)
     this->_chatroom.push_back(Room(room_name.data(), GetUserWithSSL(ssl)));
 }
 
+// Send message -> <dest_user> <message>
+
+void    Server::SendMessage(SSL *ssl) 
+{
+    std::string test = "Who would you like to send a message to ? ";
+    SSL_write(ssl, test.c_str(), test.length());
+
+    std::vector<char> username(1024);
+
+    int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
+    username[bytesRead - 1] = '\0';
+    // CHECK USER
+
+
+    // IF USER IF OK --> generate AES --> server send public RSA
+    // encrypt and send AES
+    // get pem with pseudo not with ssl object !!!!
+    SSL *ssl_send = GetSessionSSL(username.data());
+    std::string pem = GetPEMwithSSL(ssl_send);
+    SSL_write(ssl, pem.c_str(), pem.length());
+    // client encrypt msg with key
+    //std::string test2 = "Enter your message: "
+    //SSL_write(ssl, test2.c_str(), test2.length());
+
+    //int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
+    // MESSAGE ENCRYPT 
+
+    //SSL_write(ssl_send, test.c_str(), test.length());
+
+}
+
 void    Server::Menu(Command cmd, SSL *ssl) 
 {
     switch (cmd) {
@@ -68,6 +100,9 @@ void    Server::Menu(Command cmd, SSL *ssl)
         case NEW_RSA:
             std::cout << "Generating a new RSA key pair..." << std::endl;
             break;
+        case SEND:
+            SendMessage(ssl);
+            break ;
         case INVALID:
         default:
             std::cerr << "Invalid command received!" << std::endl;
