@@ -89,12 +89,12 @@ class   Server {
         void        StartServer(int serverSocket);
         void        ManageClientConnected(fd_set &read_fds, fd_set &copy_fds); 
 
-        void        Menu(Command cmd, SSL *ssl);
+        void        Menu(Command cmd, SSL *ssl, std::string msg);
             
             void    CreateChatRoom(SSL *ssl);
             void    ListChatRoom(SSL *ssl);
             void    JoinChatRoom(SSL *ssl);
-            void    SendMessage(SSL *ssl);
+            void    SendMessage(SSL *ssl, std::string user, std::string msg);
 
     private:
         std::vector<Info>   client;

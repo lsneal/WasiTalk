@@ -47,7 +47,7 @@ void    Server::StartServer(int serverSocket)
                 SSL_write(ssl, INPUT_PSEUDO, strlen(INPUT_PSEUDO));
                 int bytesRead = SSL_read(ssl, buf.data(), buf.size() - 1);
                 
-                buf[bytesRead - 1] = '\0';                
+                buf[bytesRead] = '\0';                
                 if (PseudoIsOkey(buf.data()) == true) {
                     std::cout << "Pseudo: " << buf.data() << std::endl;
                     break ;
@@ -79,6 +79,22 @@ void    Server::StartServer(int serverSocket)
 
 */
 
+void parseMessage(const std::vector<char>& buffer, std::string& pseudo, std::string& msg)
+{
+    std::string fullMessage(buffer.begin(), buffer.end());
+
+    size_t spacePos = fullMessage.find(' ');
+
+    if (spacePos != std::string::npos) {
+        pseudo = fullMessage.substr(0, spacePos);
+        msg = fullMessage.substr(spacePos + 1);
+    }
+    else {
+        pseudo = fullMessage;
+        msg = "";
+    }
+}
+
 void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds) 
 {
     for (int i = 0; i < GetClientSize(); i++) 
@@ -106,11 +122,18 @@ void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds)
             } 
             else
             {
-                buffer[bytesRead - 1] = '\0';
+                buffer[bytesRead] = '\0';
                 std::cout << "Message from client " << clientSocket << ": " << buffer.data() << std::endl;
             
-                Command cmd = GetCommand(std::string(buffer.data()));
-                Menu(cmd, ssl);
+                std::string user;
+                std::string msg;
+                parseMessage(buffer, user, msg);
+                std::cout << "msg:" << "'" << msg << "'" << std::endl;
+                std::cout << "user:" << "'" << user << "'" << std::endl;
+                SendMessage(ssl, user, msg);
+                
+                //Command cmd = GetCommand(std::string(buffer.data()));
+                //Menu(cmd, ssl, msg);
             }
         }
     }

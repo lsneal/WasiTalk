@@ -60,9 +60,9 @@ void    ReceivMsg(SSL* _ssl, std::string pseudo)
         {
             // Decrypt message and print
             std::lock_guard<std::mutex> lock(sendMutex);
-            std::string data = extractAndDecodeBase64(buffer.data(), pseudo);
-            std::string messageDecode = base64_stringDecode(data);
-            std::cout << pseudo << ": " << messageDecode.data() << std::endl;
+            //std::string data = extractAndDecodeBase64(buffer.data(), pseudo);
+            std::string messageDecode = buffer.data();//base64_stringDecode(data);
+            std::cout << messageDecode.data() << std::endl;
             OPENSSL_cleanse(buffer.data(), buffer.size());
         } 
         else

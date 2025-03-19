@@ -25,10 +25,13 @@ void    Server::CreateChatRoom(SSL *ssl)
     this->_chatroom.push_back(Room(room_name.data(), GetUserWithSSL(ssl)));
 }
 
+// list client connected
 void    Server::ListChatRoom(SSL *ssl) 
 {
-    for (int i = 0; i < (int)this->_chatroom.size(); i++) {
-        SSL_write(ssl, this->_chatroom[i].GetName().c_str(), this->_chatroom[i].GetName().size());
+    std::cout << "client_size: " << this->client.size() << std::endl;
+    for (int i = 0; i < (int)this->client.size(); i++) {
+        //SSL_write(ssl, this->_chatroom[i].GetName().c_str(), this->_chatroom[i].GetName().size());
+        SSL_write(ssl, this->client[i].getPseudo().c_str(), this->client[i].getPseudo().length());
     }
 }
 
@@ -50,24 +53,29 @@ void    Server::JoinChatRoom(SSL *ssl)
 
 // Send message -> <dest_user> <message>
 
-void    Server::SendMessage(SSL *ssl) 
+void    Server::SendMessage(SSL *ssl, std::string user, std::string msg) 
 {
-    std::string test = "Who would you like to send a message to ? ";
-    SSL_write(ssl, test.c_str(), test.length());
+    std::cout << "SEND MESSAGE FUNCTION" << std::endl;
 
-    std::vector<char> username(1024);
-
-    int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
-    username[bytesRead - 1] = '\0';
+    //int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
+    //username[bytesRead - 1] = '\0';
+    
     // CHECK USER
+
+    SSL *ssl_send = GetSessionSSL(user);
+    std::string final_msg = GetUserWithSSL(ssl) + ": " + msg;
+    SSL_write(ssl_send, final_msg.c_str(), final_msg.length());
+
 
 
     // IF USER IF OK --> generate AES --> server send public RSA
     // encrypt and send AES
     // get pem with pseudo not with ssl object !!!!
-    SSL *ssl_send = GetSessionSSL(username.data());
+
+    /*SSL *ssl_send = GetSessionSSL(username.data());
     std::string pem = GetPEMwithSSL(ssl_send);
-    SSL_write(ssl, pem.c_str(), pem.length());
+    SSL_write(ssl, pem.c_str(), pem.length());*/
+
     // client encrypt msg with key
     //std::string test2 = "Enter your message: "
     //SSL_write(ssl, test2.c_str(), test2.length());
@@ -79,9 +87,18 @@ void    Server::SendMessage(SSL *ssl)
 
 }
 
-void    Server::Menu(Command cmd, SSL *ssl) 
+void    Server::Menu(Command cmd, SSL *ssl, std::string msg) 
 {
     switch (cmd) {
+        case LIST:
+        ListChatRoom(ssl);
+            break ;
+        case INVALID:
+        default:
+            std::cerr << "Invalid command received!" << std::endl;
+            break;
+    }
+    /*switch (cmd) {
         case CREATE:
             CreateChatRoom(ssl);
             std::cout << "Creating a new chat room..." << std::endl;
@@ -107,5 +124,5 @@ void    Server::Menu(Command cmd, SSL *ssl)
         default:
             std::cerr << "Invalid command received!" << std::endl;
             break;
-    }
+    }*/
 }
