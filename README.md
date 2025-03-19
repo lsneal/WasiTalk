@@ -9,9 +9,9 @@ Key features of the project include:
 
 ## Current Features
 
-Test with openssl
 ```
-openssl s_client -connect <hostname>:<port> -CAfile <chemin_du_certificat_CA>
+./server_ex <PORT>
+./client_ex <IP> <PORT>
 ```
 
 - **Server:**
