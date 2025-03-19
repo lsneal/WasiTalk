@@ -68,7 +68,6 @@ class   Server {
         void        RemoveClient(std::string pseudo);
         bool        PseudoIsOkey(std::string pseudo);
 
-        void        SetClient(int clientSocket, std::string pseudo, SSL *ssl);
         void        SetMethodSSL(const SSL_METHOD *method);
         int         LoadCertAndPrivateKey();
 

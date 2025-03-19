@@ -121,8 +121,9 @@ int    Client::StartCommunicationWithServer(std::vector<char> buffer)
     SSL_write(this->_ssl, user_input.c_str(), user_input.length());
 
     // Send publickey RSA
-    /*buffer.assign(buffer.size(), 0);
-    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length() - 1);*/
+
+    buffer.assign(buffer.size(), 0);
+    SSL_write(this->_ssl, this->_publicKey.c_str(), this->_publicKey.length() - 1);
 
     std::cout << "for send msg -->" << " <pseudo> <msg>" << std::endl;
     std::cout << "listing user -->" << " list" << std::endl;

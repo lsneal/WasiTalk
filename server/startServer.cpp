@@ -58,7 +58,12 @@ void    Server::StartServer(int serverSocket)
             // add fd new client
             FD_SET(clientSocket, &read_fds);
             max_fd = std::max(max_fd, clientSocket);
-            this->client.push_back(Info(clientSocket, buf.data(), ssl));
+            
+            // get RSA publickey
+            std::vector<char> publicRSA(1024);
+            SSL_read(ssl, publicRSA.data(), publicRSA.size() - 1);
+            
+            this->client.push_back(Info(clientSocket, buf.data(), ssl, publicRSA.data()));
 
             NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
         

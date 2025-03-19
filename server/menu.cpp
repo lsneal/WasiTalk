@@ -62,6 +62,7 @@ void    Server::SendMessage(SSL *ssl, std::string user, std::string msg)
     
     // CHECK USER
 
+    
     SSL *ssl_send = GetSessionSSL(user);
     std::string final_msg = GetUserWithSSL(ssl) + ": " + msg;
     SSL_write(ssl_send, final_msg.c_str(), final_msg.length());

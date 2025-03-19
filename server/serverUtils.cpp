@@ -16,13 +16,6 @@ bool    Server::PseudoIsOkey(std::string pseudo)
     return true;
 }
 
-void    Server::SetClient(int clientSocket, std::string pseudo, SSL *ssl) 
-{
-    std::lock_guard<std::mutex> lock(clients_mutex);
-    Info newClient(clientSocket, pseudo, ssl);
-    this->client.push_back(newClient);
-}
-
 // modif with SSL
 void    Server::SendAll(std::string leave_msg)
 {

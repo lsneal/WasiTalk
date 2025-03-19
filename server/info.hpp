@@ -15,7 +15,7 @@
 class Info {
 
     public:
-        Info(int fd, std::string pseudo, SSL *ssl): _fd(fd), _pseudo(pseudo), _sslSession(ssl) {}
+        Info(int fd, std::string pseudo, SSL *ssl, std::string pemKey): _fd(fd), _pseudo(pseudo), _sslSession(ssl), _pemKey(pemKey) {}
         ~Info() {}
 
         void    setPseudo(std::string pseudo) { _pseudo = pseudo; }
@@ -31,8 +31,8 @@ class Info {
     private:
         int         _fd;
         std::string _pseudo;
-        std::string _pemKey;
         SSL         *_sslSession;
+        std::string _pemKey;
         fd_set      _read_fds;
 
 };

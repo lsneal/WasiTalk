@@ -72,8 +72,8 @@ void WaitingClientConnection(Server &Server, int clientSocket, SSL *ssl)
         //return ;
     }*/
 
-    if (Server.PseudoIsOkey(buffer.data()) == true)
-        Server.SetClient(clientSocket, buffer.data(), ssl);
+    /*if (Server.PseudoIsOkey(buffer.data()) == true)
+        Server.SetClient(clientSocket, buffer.data(), ssl);*/
 
     Server.ReceiveRSAKey(ssl, Server.GetIndexClient(clientSocket));
 
