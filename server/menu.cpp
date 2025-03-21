@@ -57,34 +57,10 @@ void    Server::SendMessage(SSL *ssl, std::string user, std::string msg)
 {
     std::cout << "SEND MESSAGE FUNCTION" << std::endl;
 
-    //int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
-    //username[bytesRead - 1] = '\0';
-    
-    // CHECK USER
 
-    
     SSL *ssl_send = GetSessionSSL(user);
     std::string final_msg = GetUserWithSSL(ssl) + ": " + msg;
     SSL_write(ssl_send, final_msg.c_str(), final_msg.length());
-
-
-
-    // IF USER IF OK --> generate AES --> server send public RSA
-    // encrypt and send AES
-    // get pem with pseudo not with ssl object !!!!
-
-    /*SSL *ssl_send = GetSessionSSL(username.data());
-    std::string pem = GetPEMwithSSL(ssl_send);
-    SSL_write(ssl, pem.c_str(), pem.length());*/
-
-    // client encrypt msg with key
-    //std::string test2 = "Enter your message: "
-    //SSL_write(ssl, test2.c_str(), test2.length());
-
-    //int bytesRead = SSL_read(ssl, username.data(), username.size() - 1);
-    // MESSAGE ENCRYPT 
-
-    //SSL_write(ssl_send, test.c_str(), test.length());
 
 }
 

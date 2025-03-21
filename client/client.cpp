@@ -73,6 +73,24 @@ void    ReceivMsg(SSL* _ssl, std::string pseudo)
     }
 }
 
+void parseMessage(std::string fullMessage, std::string& pseudo, std::string& msg)
+{
+    size_t spacePos = fullMessage.find(' ');
+
+    if (spacePos != std::string::npos) {
+        pseudo = fullMessage.substr(0, spacePos);
+        msg = fullMessage.substr(spacePos + 1);
+    }
+    else {
+        pseudo = fullMessage;
+        msg = "";
+    }
+}
+
+std::vector<unsigned char> stringToVector(const std::string& str) {
+    return std::vector<unsigned char>(str.begin(), str.end());
+}
+
 void    SendMsg(SSL* _ssl)
 {
     std::string user_input;
@@ -80,8 +98,11 @@ void    SendMsg(SSL* _ssl)
     while (true) 
     {
         std::getline(std::cin, user_input);
+        std::string pseudo, msg;
+        parseMessage(user_input, pseudo, msg);
         std::lock_guard<std::mutex> lock(sendMutex);
-        std::string messageEncode = user_input;//base64_stringEncode(user_input);
+        //std::vector<unsigned char> messageVector = stringToVector(message);
+        std::string messageEncode = pseudo + " " + base64_stringEncode(msg);
         SSL_write(_ssl, messageEncode.c_str(), messageEncode.length());
         OPENSSL_cleanse(&messageEncode[0], messageEncode.size());
     }
@@ -161,6 +182,10 @@ void Client::CommunicateWithServer()
 
     // Convert pem private key on RSA object for multithreading
     EVP_PKEY* privateKey = loadPrivateKeyFromString(this->_privateKey);
+
+    // receive public 
+    SSL_read(this->_ssl, buffer.data(), buffer.size());
+    std::cout << "public -> " << buffer.data() << std::endl;
 
     // for send msg --> <username> <msg>
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, this->_pseudoSession);

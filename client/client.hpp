@@ -19,6 +19,7 @@
 #include <mutex>
 #include <cstring>
 #include <iomanip>
+#include <map>
 
 #define AES_BLOCK_SIZE 32
 
@@ -79,6 +80,9 @@ class   Client {
         std::string _pseudoSession;
         SSL_CTX*    _ctx;
         SSL*        _ssl;
+        
+        // client connection --> send public key --> all client connected
+        std::map<std::string, std::string> _clientKeyMap;
         
 };
 

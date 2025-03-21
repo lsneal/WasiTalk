@@ -62,8 +62,11 @@ void    Server::StartServer(int serverSocket)
             // get RSA publickey
             std::vector<char> publicRSA(1024);
             SSL_read(ssl, publicRSA.data(), publicRSA.size() - 1);
-            
+
             this->client.push_back(Info(clientSocket, buf.data(), ssl, publicRSA.data()));
+            
+            // if client.size() > 1 --> send publickey at all client
+            distributePublicKeyToClients(ssl, publicRSA.data());
 
             NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
         
@@ -72,6 +75,20 @@ void    Server::StartServer(int serverSocket)
         ManageClientConnected(read_fds, copy_fds);
     }
 }
+
+void    Server::distributePublicKeyToClients(SSL *ssl, std::string publicRSA) 
+{
+    if (this->client.size() == 1)
+        return ;
+
+    std::cout << "size: " << this->client.size() << std::endl;
+    for (int i = 0; i < (int)this->client.size(); i++)
+    {
+        if (ssl != this->client[i].getSSL())
+            SSL_write(this->client[i].getSSL(), publicRSA.c_str(), publicRSA.length());
+    }
+}
+
 
 /*
 

@@ -95,6 +95,8 @@ class   Server {
             void    JoinChatRoom(SSL *ssl);
             void    SendMessage(SSL *ssl, std::string user, std::string msg);
 
+            void    distributePublicKeyToClients(SSL *ssl, std::string publicRSA);
+        
     private:
         std::vector<Info>   client;
         int                 _serverFd;
