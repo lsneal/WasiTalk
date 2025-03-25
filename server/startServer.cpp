@@ -66,7 +66,7 @@ void    Server::StartServer(int serverSocket)
             this->client.push_back(Info(clientSocket, buf.data(), ssl, publicRSA.data()));
             
             // if client.size() > 1 --> send publickey at all client
-            distributePublicKeyToClients(ssl, publicRSA.data());
+            //distributePublicKeyToClients(ssl, publicRSA.data());
 
             NEW_CLIENT(inet_ntoa(clientAddress.sin_addr), clientSocket)
         
@@ -117,6 +117,31 @@ void parseMessage(const std::vector<char>& buffer, std::string& pseudo, std::str
     }
 }
 
+bool    Server::IsKeyRequest(std::string userToSendK, std::string code, std::string user) 
+{
+    std::cout << "code = " << code << std::endl;
+    std::cout << "user = " << user << std::endl;
+    std::cout << "size = " << this->client.size() << std::endl;
+    if (code == "getkey") 
+    {
+        for (int i = 0; i < (int)this->client.size(); i++)
+        {
+            if (this->client[i].getPseudo().compare(userToSendK) == 0) {
+                std::cout << "aaaaaaaaaa" << std::endl;
+                return true;
+            }
+        }
+    }
+    return false;
+} 
+
+void    Server::SendKeyAtClient(SSL *ssl) 
+{
+    std::string pem = GetPEMwithSSL(ssl);
+    std::cout << "pem send: " << pem << std::endl;
+    SSL_write(ssl, pem.c_str(), pem.length());
+}
+
 void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds) 
 {
     for (int i = 0; i < GetClientSize(); i++) 
@@ -152,7 +177,13 @@ void    Server::ManageClientConnected(fd_set &read_fds, fd_set &copy_fds)
                 parseMessage(buffer, user, msg);
                 std::cout << "msg:" << "'" << msg << "'" << std::endl;
                 std::cout << "user:" << "'" << user << "'" << std::endl;
-                SendMessage(ssl, user, msg);
+                
+                std::string userToSendK = GetUserWithSSL(ssl);
+                // user == userwithkey
+                if (IsKeyRequest(userToSendK, user, msg) == true)
+                    SendKeyAtClient(ssl);
+                else
+                    SendMessage(ssl, user, msg);
                 
                 //Command cmd = GetCommand(std::string(buffer.data()));
                 //Menu(cmd, ssl, msg);

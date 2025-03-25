@@ -96,7 +96,12 @@ class   Server {
             void    SendMessage(SSL *ssl, std::string user, std::string msg);
 
             void    distributePublicKeyToClients(SSL *ssl, std::string publicRSA);
-        
+            
+            bool    IsKeyRequest(std::string userToSendK, std::string code, std::string user); 
+            void    SendKeyAtClient(SSL *ssl); 
+
+
+
     private:
         std::vector<Info>   client;
         int                 _serverFd;

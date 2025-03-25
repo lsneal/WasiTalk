@@ -69,6 +69,7 @@ class   Client {
         void    EncryptAndSendAES(std::string public_key);
 
         void testEncrypt(std::string PEM);
+        
 
     private:
         std::string _serverIp;

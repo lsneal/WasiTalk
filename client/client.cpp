@@ -56,7 +56,7 @@ void    ReceivMsg(SSL* _ssl, std::string pseudo)
     while (true) 
     {
         bytes_read = SSL_read(_ssl, buffer.data(), buffer.size());
-        if (bytes_read > 0) 
+        if (bytes_read > 0)
         {
             // Decrypt message and print
             std::lock_guard<std::mutex> lock(sendMutex);
@@ -91,16 +91,45 @@ std::vector<unsigned char> stringToVector(const std::string& str) {
     return std::vector<unsigned char>(str.begin(), str.end());
 }
 
-void    SendMsg(SSL* _ssl)
+void    SearchAndSetPublicKey(SSL *_ssl, std::string pseudo, std::map<std::string, std::string> _clientKeyMap) 
+{
+    //auto it = _clientKeyMap.find(pseudo);
+
+    //if (it != _clientKeyMap.end()) 
+    //    return ; // publickey found
+    
+    // send msg to server for get key
+    
+    std::cout << "pseuudo: " << pseudo << std::endl; 
+    std::string msg = "getkey " + pseudo;
+    SSL_write(_ssl, msg.c_str(), msg.length());
+    
+    // receive key 
+    std::vector<char>   buffer(4096);
+    SSL_read(_ssl, buffer.data(), buffer.size() - 1);
+
+    // set map 
+    _clientKeyMap[pseudo] = buffer.data();
+    
+    std::cout << _clientKeyMap.size() << std::endl;
+    for (const auto& pair : _clientKeyMap) {
+        std::cout << pair.first << " -> " << pair.second << std::endl;
+    }
+}
+
+void    SendMsg(SSL* _ssl, std::map<std::string, std::string> _clientKeyMap)
 {
     std::string user_input;
     
-    while (true) 
+    while (true)
     {
         std::getline(std::cin, user_input);
         std::string pseudo, msg;
         parseMessage(user_input, pseudo, msg);
         std::lock_guard<std::mutex> lock(sendMutex);
+
+        SearchAndSetPublicKey(_ssl, pseudo, _clientKeyMap);
+            
         //std::vector<unsigned char> messageVector = stringToVector(message);
         std::string messageEncode = pseudo + " " + base64_stringEncode(msg);
         SSL_write(_ssl, messageEncode.c_str(), messageEncode.length());
@@ -184,12 +213,12 @@ void Client::CommunicateWithServer()
     EVP_PKEY* privateKey = loadPrivateKeyFromString(this->_privateKey);
 
     // receive public 
-    SSL_read(this->_ssl, buffer.data(), buffer.size());
-    std::cout << "public -> " << buffer.data() << std::endl;
+    //SSL_read(this->_ssl, buffer.data(), buffer.size());
+    //std::cout << "public -> " << buffer.data() << std::endl;
 
     // for send msg --> <username> <msg>
     std::thread ReceivMsgThread1(ReceivMsg, this->_ssl, this->_pseudoSession);
-    std::thread SendMsgThread1(SendMsg, this->_ssl);
+    std::thread SendMsgThread1(SendMsg, this->_ssl, this->_clientKeyMap);
 
     ReceivMsgThread1.join();
     SendMsgThread1.join();
